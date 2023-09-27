@@ -1,0 +1,8 @@
+.vscode
+*.devcontainer
+*.projbuild
+**sdkconfig**
+*.lock
+*.yml
+build/
+managed_components/
