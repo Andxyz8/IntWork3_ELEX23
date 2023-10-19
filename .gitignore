@@ -4,5 +4,7 @@
 **sdkconfig**
 *.lock
 *.yml
+.venv/
+**.bak
 build/
 managed_components/
