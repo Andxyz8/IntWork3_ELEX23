@@ -45,3 +45,4 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+tests/firebase-tests/cloud_server_credentials.json
