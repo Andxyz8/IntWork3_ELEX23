@@ -1,15 +1,3 @@
-.vscode
-*.devcontainer
-*.projbuild
-**sdkconfig**
-*.lock
-*.yml
-.venv/
-**.bak
-patrole/node_modules/
-build/
-managed_components/
-
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # dependencies
