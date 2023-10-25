@@ -43,18 +43,6 @@ export default function App() {
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* <View>
-        <Text>
-          Please Connect to a Heart Rate Monitor
-        </Text>
-      </View>
-      <Button title='Connect' onPress={openModal}></Button>
-      <DeviceModal
-        closeModal={hideModal}
-        visible={isModalVisible}
-        connectToPeripheral={() => {}}
-        devices={[]}
-      /> */}
             <RemoteControls></RemoteControls>
         </SafeAreaView>
     );
