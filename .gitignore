@@ -9,6 +9,8 @@
 patrole/node_modules/
 build/
 managed_components/
+__pycache__
+
 
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
