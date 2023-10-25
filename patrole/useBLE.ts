@@ -17,14 +17,16 @@ const RASPBERRY_CHARACTERISTIC = "00002a37-0000-1000-8000-00805f9b34fb";
 
 interface BluetoothLowEnergyApi {
     requestPermissions(): Promise<boolean>;
-    scanForPeripherals(): void;
+    scanForPeripherals(): Promise<any[]>;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
     const bleManager = useMemo(() => new BleManager(), []);
     const [allDevices, setAllDevices] = useState<Device[]>([]);
+    const [test, setTest] = useState<any[]>([]);
     const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
     const [heartRate, setHeartRate] = useState<number>(0);
+    const [scanning, setScanning] = useState<Boolean>(false);
 
     const requestAndroid31Permissions = async () => {
         const bluetoothScanPermission = await PermissionsAndroid.request(
@@ -83,22 +85,40 @@ function useBLE(): BluetoothLowEnergyApi {
     };
 
     const isDuplicteDevice = (devices: Device[], nextDevice: Device) =>
-        devices.findIndex((device) => nextDevice.id === device.id) > -1;
+        devices.findIndex((device) => nextDevice.name === device.name) > -1;
 
-    const scanForPeripherals = () =>
-        bleManager.startDeviceScan(null, null, (error, device) => {
+    function timeout(delay: number) {
+        return new Promise((res) => setTimeout(res, delay));
+    }
+
+    const scanForPeripherals = async () => {
+        console.log("scan");
+        let devices: any[] = test;
+        setScanning(true);
+        bleManager.startDeviceScan([], null, (error, device) => {
             if (error) {
                 console.log(error);
             }
-            if (device && device.name?.includes("CorSense")) {
-                setAllDevices((prevState: Device[]) => {
-                    if (!isDuplicteDevice(prevState, device)) {
-                        return [...prevState, device];
-                    }
-                    return prevState;
-                });
+
+            if (device.name != null) {
+                console.log(device);
+                if (!isDuplicteDevice(devices, device)) {
+                    devices.push({
+                        name: device.name,
+                        uuid: String(device.serviceUUIDs),
+                    });
+                }
+                setTest(devices);
             }
         });
+
+        await timeout(5000);
+
+        bleManager.stopDeviceScan();
+        console.log("CABO");
+        console.log(test);
+        return test;
+    };
 
     const connectToDevice = async (device: Device) => {
         try {
@@ -122,44 +142,26 @@ function useBLE(): BluetoothLowEnergyApi {
         }
     };
 
-    const onHeartRateUpdate = (
-        error: BleError | null,
-        characteristic: Characteristic | null
-    ) => {
-        if (error) {
-            console.log(error);
-            return -1;
-        } else if (!characteristic?.value) {
-            console.log("No Data was recieved");
-            return -1;
-        }
-
-        const rawData = base64.decode(characteristic.value);
-        let innerHeartRate: number = -1;
-
-        const firstBitValue: number = Number(rawData) & 0x01;
-
-        if (firstBitValue === 0) {
-            innerHeartRate = rawData[1].charCodeAt(0);
-        } else {
-            innerHeartRate =
-                Number(rawData[1].charCodeAt(0) << 8) +
-                Number(rawData[2].charCodeAt(2));
-        }
-
-        setHeartRate(innerHeartRate);
+    const startStreamingData = async (device: Device) => {
+        // if (device) {
+        //     device.monitorCharacteristicForService(
+        //         RASPBERRY_UUID,
+        //         RASPBERRY_CHARACTERISTIC,
+        //     );
+        // } else {
+        //     console.log("No Device Connected");
+        // }
     };
 
-    const startStreamingData = async (device: Device) => {
-        if (device) {
-            device.monitorCharacteristicForService(
-                RASPBERRY_UUID,
-                RASPBERRY_CHARACTERISTIC,
-                onHeartRateUpdate
-            );
-        } else {
-            console.log("No Device Connected");
-        }
+    const add = () => {
+        let a = test;
+
+        a.push({ date: new Date().toISOString(), name: "OI" });
+
+        console.log(a.length);
+        setTest(a);
+
+        return a;
     };
 
     return {
