@@ -16,6 +16,7 @@ import { BleManager, Device } from "react-native-ble-plx";
 import { LogBox } from "react-native";
 import DeviceModal from "../DeviceConnectionModal";
 import { styles } from "../Styles/styles";
+import Icon from "react-native-vector-icons/FontAwesome";
 
 LogBox.ignoreLogs(["new NativeEventEmitter"]); // Ignore log notification by message
 LogBox.ignoreAllLogs(); //Ignore all log notifications
@@ -49,7 +50,7 @@ export default function App() {
 
     return (
         <View>
-            <SafeAreaView>
+            {/* <SafeAreaView>
                 <TouchableOpacity onPress={getDevices} style={styles.ctaButton}>
                     <Text style={styles.ctaButtonText}>
                         {"SEARCH FOR DEVICES"}
@@ -66,7 +67,62 @@ export default function App() {
                         </View>
                     ))}
                 </View>
-            </SafeAreaView>
+            </SafeAreaView> */}
+            <View style={styles.header}>
+                <Text style={styles.headerTxt1}>STATUS OF SETUP</Text>
+                <Text style={styles.headerTxt2}>Routing</Text>
+            </View>
+
+            <View style={styles.controls}>
+                <View style={styles.up}>
+                    <Icon
+                        style={{ textAlign: "center", lineHeight: 120 }}
+                        name="arrow-up"
+                        size={50}
+                        color="white"
+                    />
+                </View>
+                <View style={styles.right}>
+                    <Icon
+                        style={{ textAlign: "center", lineHeight: 120 }}
+                        name="arrow-right"
+                        size={50}
+                        color="white"
+                    />
+                </View>
+                <View style={styles.left}>
+                    <Icon
+                        style={{ textAlign: "center", lineHeight: 120 }}
+                        name="arrow-left"
+                        size={50}
+                        color="white"
+                    />
+                </View>
+                <View style={styles.read}>
+                    <Text
+                        style={{
+                            textAlign: "center",
+                            lineHeight: 70,
+                            color: "white",
+                            fontSize: 25,
+                        }}
+                    >
+                        Read ArUco
+                    </Text>
+                </View>
+                <View style={styles.cancel}>
+                    <Text
+                        style={{
+                            textAlign: "center",
+                            lineHeight: 70,
+                            color: "#0864f4",
+                            fontSize: 25,
+                        }}
+                    >
+                        Cancel Process
+                    </Text>
+                </View>
+            </View>
         </View>
     );
 }

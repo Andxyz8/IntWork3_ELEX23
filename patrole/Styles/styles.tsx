@@ -14,10 +14,7 @@ export const styles = StyleSheet.create({
         alignItems: "flex-start",
         flexDirection: "row",
     },
-    controls: {},
-    right: {
-        marginRight: 0,
-    },
+
     container: {
         flex: 1,
         backgroundColor: "#f2f2f2",
