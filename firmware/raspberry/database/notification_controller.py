@@ -15,7 +15,7 @@ class NotificationController:
         # notifications: list[Pyre] = pyres_notifications.each()
 
         next_key = self.__ctrl_database.get_next_id_collection(
-            collection = "notifications"
+            collection = "notification"
         )
 
         dict_message = {
@@ -26,7 +26,7 @@ class NotificationController:
         }
 
         self.__ctrl_database.insert_data_into_collection(
-            collection = 'notifications',
+            collection = 'notification',
             info_insert = dict_message
         )
 

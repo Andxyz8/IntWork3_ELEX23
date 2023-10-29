@@ -13,14 +13,10 @@ class DatabaseController:
         if not self.__initialize_firebase():
             raise Exception("Não foi possível inicializar o Firebase")
 
-        print("DATABASES INICIALIZADO COM SUCESSO")
-
     def __initialize_firebase(self) -> bool:
         try:
-            with open("./database/credentials.json", "r") as credentials:
+            with open("./database/credentials.json", "r", encoding = 'utf-8') as credentials:
                 firebase_config = json_load(credentials)
-            
-            print(firebase_config)
 
             self.__firebase = pyrebase_initialize_app(firebase_config)
 
@@ -36,10 +32,13 @@ class DatabaseController:
                 "https://mall-security-robot-e52f0-default-rtdb.firebaseio.com/"
                 + f"{collection}.json?orderBy=%22id_{collection}%22&limitToLast=1"
             )
-        print(f"URL BUSCA id: {url}")
+
         response = requests_get(
-            url = url
+            url = url,
+            timeout = 5
         )
+
+        print(f"URL REQUEST: {url}")
 
         records = response.json()
 
@@ -52,7 +51,7 @@ class DatabaseController:
             next_key = int(last_key_inserted) + 1
         else:
             next_key = 1
-        
+
         return next_key
 
     def update_data_into_collection(
