@@ -12,18 +12,21 @@ import * as ExpoDevice from "expo-device";
 
 import base64 from "react-native-base64";
 
-const RASPBERRY_UUID = "0000180d-0000-1000-8000-00805f9b34fb";
-const RASPBERRY_CHARACTERISTIC = "00002a37-0000-1000-8000-00805f9b34fb";
+const RASPBERRY_UUID = "00001801-0000-1000-8000-00805f9b34fb";
+const RASPBERRY_CHARACTERISTIC = "00001234-0000-1000-8000-00805f9b34fb";
 
 interface BluetoothLowEnergyApi {
     requestPermissions(): Promise<boolean>;
-    scanForPeripherals(): Promise<any[]>;
+    scanForPeripherals(): Promise<Device>;
+    connectToDevice(device: Device): Promise<Device>;
+    add(): void;
+    sendCommand(device: Device, command: string): void;
 }
 
 function useBLE(): BluetoothLowEnergyApi {
     const bleManager = useMemo(() => new BleManager(), []);
     const [allDevices, setAllDevices] = useState<Device[]>([]);
-    const [test, setTest] = useState<any[]>([]);
+    const [test, setTest] = useState<String>("NAO FOI");
     const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
     const [heartRate, setHeartRate] = useState<number>(0);
     const [scanning, setScanning] = useState<Boolean>(false);
@@ -93,31 +96,26 @@ function useBLE(): BluetoothLowEnergyApi {
 
     const scanForPeripherals = async () => {
         console.log("scan");
-        let devices: any[] = test;
+        let dvice: Device = null;
         setScanning(true);
         bleManager.startDeviceScan([], null, (error, device) => {
             if (error) {
                 console.log(error);
             }
 
-            if (device.name != null) {
-                console.log(device);
-                if (!isDuplicteDevice(devices, device)) {
-                    devices.push({
-                        name: device.name,
-                        uuid: String(device.serviceUUIDs),
-                    });
-                }
-                setTest(devices);
+            if (device.id == "B8:27:EB:EF:69:21") {
+                //if (device.name == "raspberrypi") {
+                //console.log(device);
+                connectToDevice(device);
+                dvice = device;
             }
         });
 
-        await timeout(5000);
-
+        await timeout(30000);
+        console.log("stop scan");
         bleManager.stopDeviceScan();
-        console.log("CABO");
-        console.log(test);
-        return test;
+
+        return dvice;
     };
 
     const connectToDevice = async (device: Device) => {
@@ -126,9 +124,13 @@ function useBLE(): BluetoothLowEnergyApi {
                 device.id
             );
             setConnectedDevice(deviceConnection);
-            await deviceConnection.discoverAllServicesAndCharacteristics();
+            let d =
+                await deviceConnection.discoverAllServicesAndCharacteristics();
+            console.log("FOI");
+            sendCommand(deviceConnection, "UP");
             bleManager.stopDeviceScan();
-            startStreamingData(deviceConnection);
+
+            return deviceConnection;
         } catch (e) {
             console.log("FAILED TO CONNECT", e);
         }
@@ -153,20 +155,52 @@ function useBLE(): BluetoothLowEnergyApi {
         // }
     };
 
+    const sendCommand = async (device: Device, command: string) => {
+        if (device) {
+            device
+                // .writeCharacteristicWithResponseForService(
+                //     RASPBERRY_UUID,
+                //     RASPBERRY_CHARACTERISTIC,
+                //     base64.encode(command)
+                // )
+                // .then((characteristic) => {
+                //     console.log(
+                //         "Command sended:",
+                //         base64.decode(characteristic.value)
+                //     );
+                // });
+                .readCharacteristicForService(
+                    RASPBERRY_UUID,
+                    RASPBERRY_CHARACTERISTIC
+                )
+                .then((characteristic) => {
+                    console.log(
+                        "Command read:",
+                        characteristic.value,
+                        base64.decode(characteristic.value),
+                        parseFloat(base64.decode(characteristic.value))
+                    );
+                });
+            //         .characteristicsForService(RASPBERRY_UUID)
+            //         .then((characteristic) => {
+            //             console.log("Command read:", characteristic);
+            //         });
+            // } else {
+            console.log("No Device Connected");
+        }
+    };
+
     const add = () => {
-        let a = test;
-
-        a.push({ date: new Date().toISOString(), name: "OI" });
-
-        console.log(a.length);
-        setTest(a);
-
-        return a;
+        console.log(test);
+        setTest("FOI");
     };
 
     return {
         scanForPeripherals,
         requestPermissions,
+        connectToDevice,
+        add,
+        sendCommand,
     };
 }
 

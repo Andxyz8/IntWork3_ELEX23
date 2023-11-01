@@ -9,8 +9,9 @@ import {
     TextInput,
 } from "react-native";
 import { StyleSheet } from "react-native";
+import useBLE from "../../services/useBLE";
 
-export default function RouteList({ navigation }) {
+export default function RouteList({ route, navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -28,7 +29,9 @@ export default function RouteList({ navigation }) {
             <View>
                 <TouchableOpacity
                     style={styles.add}
-                    onPress={() => navigation.navigate("StartRouting")}
+                    onPress={() =>
+                        navigation.navigate("RemoteControls", route.params)
+                    }
                 >
                     <View>
                         <Text

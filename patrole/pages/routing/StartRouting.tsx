@@ -1,15 +1,8 @@
 import React, { useMemo, useState } from "react";
-import {
-    TouchableOpacity,
-    PermissionsAndroid,
-    View,
-    Text,
-    Platform,
-    SafeAreaView,
-} from "react-native";
+import { TouchableOpacity, View, Text } from "react-native";
 import { StyleSheet } from "react-native";
 
-export default function StartRouting({ navigation }) {
+export default function StartRouting({ route, navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -44,7 +37,9 @@ export default function StartRouting({ navigation }) {
 
             <TouchableOpacity
                 style={styles.start}
-                onPress={() => navigation.navigate("RemoteControls")}
+                onPress={() =>
+                    navigation.navigate("RemoteControls", route.params)
+                }
             >
                 <View>
                     <Text
@@ -62,7 +57,7 @@ export default function StartRouting({ navigation }) {
 
             <TouchableOpacity
                 style={styles.cancel}
-                onPress={() => navigation.navigate("RouteList")}
+                onPress={() => navigation.navigate("RouteList", route.params)}
             >
                 <View>
                     <Text

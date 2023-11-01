@@ -9,8 +9,24 @@ import {
     TextInput,
 } from "react-native";
 import { StyleSheet } from "react-native";
+import raspberryAPI from "../../services/raspberryAPI";
 
-export default function SaveRoute({ navigation }) {
+export default function SaveRoute({ route, navigation }) {
+    const [name, setName] = useState("");
+    const [interval, setInterval] = useState("");
+    const [patrols, setPatrols] = useState("");
+    const { getRecordedSteps, parseRecordedSteps } = raspberryAPI();
+    const address = route.params;
+
+    function saveRoute() {
+        getRecordedSteps(address).then((steps) => {
+            parseRecordedSteps(steps).then((res) => {
+                console.log(name, interval, patrols);
+                if (res) navigation.navigate("RouteList", route.params);
+            });
+        });
+    }
+
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -20,19 +36,28 @@ export default function SaveRoute({ navigation }) {
 
             <View style={styles.config}>
                 <Text style={{ fontSize: 20 }}> Name of the Route: </Text>
-                <TextInput style={styles.input} onChangeText={() => {}} />
+                <TextInput
+                    style={styles.input}
+                    onChangeText={(nme) => {
+                        setName(nme);
+                    }}
+                />
 
                 <Text style={{ fontSize: 20 }}>Interval between routes</Text>
                 <TextInput
                     style={styles.input}
-                    onChangeText={() => {}}
+                    onChangeText={(interv) => {
+                        setInterval(interv);
+                    }}
                     keyboardType="numeric"
                 />
 
                 <Text style={{ fontSize: 20 }}> Number of patrols: </Text>
                 <TextInput
                     style={styles.input}
-                    onChangeText={() => {}}
+                    onChangeText={(patr) => {
+                        setPatrols(patr);
+                    }}
                     keyboardType="numeric"
                 />
             </View>
@@ -40,7 +65,7 @@ export default function SaveRoute({ navigation }) {
             <View>
                 <TouchableOpacity
                     style={styles.save}
-                    onPress={() => navigation.navigate("RouteList")}
+                    onPress={() => saveRoute()}
                 >
                     <View>
                         <Text
@@ -58,7 +83,9 @@ export default function SaveRoute({ navigation }) {
 
                 <TouchableOpacity
                     style={styles.cancel}
-                    onPress={() => navigation.navigate("RouteList")}
+                    onPress={() =>
+                        navigation.navigate("RouteList", route.params)
+                    }
                 >
                     <View>
                         <Text

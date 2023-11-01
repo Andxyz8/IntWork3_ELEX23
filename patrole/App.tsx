@@ -1,5 +1,5 @@
 import { StyleSheet } from "react-native";
-import useBLE from "./useBLE";
+import useBLE from "./services/useBLE";
 import { useState } from "react";
 import RemoteControls from "./pages/routing/RemoteControls";
 import { NavigationContainer } from "@react-navigation/native";

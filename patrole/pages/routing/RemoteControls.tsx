@@ -2,41 +2,18 @@ import React, { useMemo, useState } from "react";
 import { StyleSheet } from "react-native";
 import { TouchableOpacity, View, Text } from "react-native";
 
-import useBLE from "../../useBLE";
-
-import { BleManager, Device } from "react-native-ble-plx";
-import { LogBox } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome";
+import raspberryAPI from "../../services/raspberryAPI";
 
-LogBox.ignoreLogs(["new NativeEventEmitter"]); // Ignore log notification by message
-LogBox.ignoreAllLogs(); //Ignore all log notifications
+export default function RemoteControls({ route, navigation }) {
+    const { sendCommand } = raspberryAPI();
+    const address = route.params;
 
-const bleManager = new BleManager();
-
-export default function RemoteControls({ navigation }) {
-    const {
-        requestPermissions,
-        scanForPeripherals,
-        // connectToDevice,
-        // connectedDevice,
-        // heartRate,
-        // disconnectFromDevice,
-    } = useBLE();
-    const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-    const [flag, setFlag] = useState<boolean>(false);
-    const [test, setTest] = useState<any[]>([]);
-    const [allDevices, setAllDevices] = useState<Device[]>([]);
-
-    const getDevices = () => {
-        requestPermissions().then((permission: boolean) => {
-            if (permission) {
-                scanForPeripherals().then((d) => {
-                    setTest(d);
-                    setFlag(!flag);
-                });
-            }
+    function sendControl(command) {
+        sendCommand(command, address).then((last) => {
+            if (last) navigation.navigate("SaveRoute", route.params);
         });
-    };
+    }
 
     return (
         <View style={styles.container}>
@@ -48,7 +25,7 @@ export default function RemoteControls({ navigation }) {
             <View style={styles.controls}>
                 <TouchableOpacity
                     style={styles.up}
-                    onPress={() => console.log("UP")}
+                    onPress={() => sendControl("UP")}
                 >
                     <View>
                         <Icon
@@ -62,7 +39,7 @@ export default function RemoteControls({ navigation }) {
 
                 <TouchableOpacity
                     style={styles.right}
-                    onPress={() => console.log("RIGHT")}
+                    onPress={() => sendControl("RIGHT")}
                 >
                     <View>
                         <Icon
@@ -76,7 +53,7 @@ export default function RemoteControls({ navigation }) {
 
                 <TouchableOpacity
                     style={styles.left}
-                    onPress={() => console.log("LEFT")}
+                    onPress={() => sendControl("LEFT")}
                 >
                     <View>
                         <Icon
@@ -89,7 +66,8 @@ export default function RemoteControls({ navigation }) {
                 </TouchableOpacity>
                 <TouchableOpacity
                     style={styles.read}
-                    onPress={() => navigation.navigate("SaveRoute")}
+                    //onPress={() => sendCommand(device, "READ")}
+                    onPress={() => sendControl("READ")}
                 >
                     <View>
                         <Text
@@ -107,7 +85,9 @@ export default function RemoteControls({ navigation }) {
 
                 <TouchableOpacity
                     style={styles.cancel}
-                    onPress={() => navigation.navigate("RouteList")}
+                    onPress={() =>
+                        navigation.navigate("RouteList", route.params)
+                    }
                 >
                     <View>
                         <Text
