@@ -8,6 +8,8 @@
 #include "driver/gpio.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
+#include "byte_operator.h"
+#include "handlers/compass_module.h"
 
 
 extern QueueHandle_t task_handler_interrupt_queue;

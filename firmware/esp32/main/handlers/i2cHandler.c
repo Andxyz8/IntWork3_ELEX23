@@ -4,11 +4,11 @@
 void i2c_handler_initialize(){
     // Define the i2c configuration for esp
     i2c_config_t conf_slave = {
-        .sda_io_num = GPIO_21_I2C_SDA,            // select SDA GPIO specific to your project
+        .sda_io_num = GPIO_21_I2C_SDA_RPI,            // select SDA GPIO specific to your project
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
-        .scl_io_num = GPIO_22_I2C_SCL,            // select SCL GPIO specific to your project
+        .scl_io_num = GPIO_22_I2C_SCL_RPI,            // select SCL GPIO specific to your project
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .mode = I2C_ESP_MODE,
+        .mode = I2C_ESP_MODE_WITH_RASPBERRY_PI,
         .slave.addr_10bit_en = 0,
         .slave.slave_addr = I2C_SLAVE_ADDRESS_RASP, // slave address of your project
         .slave.maximum_speed = I2C_SLAVE_MAX_SPEED, // expected maximum clock speed
@@ -19,10 +19,10 @@ void i2c_handler_initialize(){
     i2c_param_config(I2C_MASTER_PORT, &conf_slave);
 
     // Install the i2c driver
-    i2c_driver_install(I2C_MASTER_PORT, I2C_ESP_MODE, 1024, 1024, 0);
+    i2c_driver_install(I2C_MASTER_PORT, I2C_ESP_MODE_WITH_RASPBERRY_PI, 1024, 1024, 0);
 
     // Configure I2C pin to be able to have interruptions
-    gpio_set_intr_type(GPIO_21_I2C_SDA, GPIO_INTR_ANYEDGE);
+    gpio_set_intr_type(GPIO_21_I2C_SDA_RPI, GPIO_INTR_ANYEDGE);
 }
 
 uint8_t* i2c_handler_receive_command(){
@@ -30,7 +30,7 @@ uint8_t* i2c_handler_receive_command(){
     uint8_t *data_received_i2c = (uint8_t *) malloc(2 * sizeof(uint8_t));
 
     // Read the i2c buffer communication directly with raspberry
-    i2c_slave_read_buffer(I2C_SLAVE_PORT, data_received_i2c, 2, pdMS_TO_TICKS(20));
+    i2c_slave_read_buffer(I2C_ESP_NUM_FOR_RASPBERRY, data_received_i2c, 2, pdMS_TO_TICKS(20));
 
     return data_received_i2c;
 }
@@ -38,7 +38,7 @@ uint8_t* i2c_handler_receive_command(){
 void i2c_handler_send_data(uint8_t *data_to_send_i2c){
     // Send the data to raspberry
     i2c_slave_write_buffer(
-        I2C_SLAVE_PORT,
+        I2C_ESP_NUM_FOR_RASPBERRY,
         data_to_send_i2c,
         sizeof(data_to_send_i2c),
         pdMS_TO_TICKS(20)

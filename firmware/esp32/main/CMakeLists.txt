@@ -1,4 +1,12 @@
 idf_component_register(
-    SRCS "main.c" "handlers/taskHandler.c" "handlers/i2cHandler.c" "utils/byte_operator.c"
-    INCLUDE_DIRS "." "./handlers" "./utils"
+    SRCS 
+        "main.c"
+        "handlers/compass_module.c"
+        "handlers/taskHandler.c"
+        "handlers/i2cHandler.c"
+        "utils/byte_operator.c"
+    INCLUDE_DIRS 
+        "."
+        "./handlers"
+        "./utils"
 )

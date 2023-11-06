@@ -1,12 +1,9 @@
-// LIBRARIES IMPORTS
-
-
 // OWN LIBRARIES IMPORTS
 #include "main.h"
 
 
 QueueHandle_t task_handler_interrupt_queue;
-
+i2c_cmd_handle_t i2c_cmd_compass_module;
 
 void app_main(){
     // IF DIFFERENT FROM 1, PAY ATTENTION TO THIS AND CHECK THE REASON
@@ -25,3 +22,19 @@ void app_main(){
     printf("FINISHED STARTING TASK HANDLER.\n");
     printf("FINISHED STARTING ESP32 FIRMWARE.\n");
 }
+
+/* TODO: need to validate compass module functioning*/
+
+/*
+void app_main(){
+    init_i2c_config_compass_module();
+
+    int leitura = 0;
+    while (true){
+        leitura++;
+        read_compass_module();
+        printf("Read N: %d\n", leitura);
+    }
+
+    // destroy_i2c_config_compass_module();
+}*/

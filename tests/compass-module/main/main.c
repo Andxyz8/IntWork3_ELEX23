@@ -11,11 +11,9 @@
 #define I2C_ADDRESS 0x1e
 
 static char tag[] = "hmc5883l";
+i2c_cmd_handle_t cmd;
 
-#undef ESP_ERROR_CHECK
-#define ESP_ERROR_CHECK(x)   do { esp_err_t rc = (x); if (rc != ESP_OK) { ESP_LOGE("err", "esp_err_t = %d", rc); assert(0 && #x);} } while(0);
-
-void task_hmc5883l(void *ignore) {
+void app_main() {
 	ESP_LOGD(tag, ">> hmc5883l");
 	i2c_config_t conf;
 	conf.mode = I2C_MODE_MASTER;
@@ -23,7 +21,7 @@ void task_hmc5883l(void *ignore) {
 	conf.scl_io_num = PIN_CLK;
 	conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
 	conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-	conf.master.clk_speed = 100000;
+	conf.master.clk_speed = 1000;
 	ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
 	ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0));
 

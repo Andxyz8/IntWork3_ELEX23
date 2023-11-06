@@ -1,5 +1,4 @@
 #include "taskHandler.h"
-#include "byte_operator.h"
 
 
 static void IRAM_ATTR gpio_interruption_handler(void *args){
@@ -21,7 +20,7 @@ void task_controller(void *params){
             printf("PINNUMBER ACTIVATED: %d\n", pin_number);
 
             // if the interruption pin_number is from the i2c communication
-            if (pin_number == GPIO_21_I2C_SDA){
+            if (pin_number == GPIO_21_I2C_SDA_RPI){
                 printf("PINNUMBER FUNCTION: %d\n", pin_number);
 
                 // receive the command from raspberry
@@ -57,6 +56,14 @@ void task_controller(void *params){
                     i2c_handler_send_data(bytes_compass_value);
                 }
 
+                if ((char) command_received[0] == 'o' && (char) command_received[1] == 'b')){
+                    printf("COMMAND RESPONSE FOR TURN OFF BUZZER: ob\n");
+                    // turn off buzzer
+                    gpio_set_level(GPIO_18_BUZZER, 0);
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "OKOK");
+                }
                 free(command_received);
                 printf("ENCERRANDO TRATAMENTO DA INTERRUPCAO\n");
             }
@@ -83,8 +90,8 @@ void initialize_interruption_handler(){
 
     // define the handler for the interruptions
     gpio_isr_handler_add(
-        GPIO_21_I2C_SDA,
+        GPIO_21_I2C_SDA_RPI,
         gpio_interruption_handler,
-        (void *) GPIO_21_I2C_SDA
+        (void *) GPIO_21_I2C_SDA_RPI
     );
 }
