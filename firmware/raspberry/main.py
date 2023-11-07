@@ -1,12 +1,12 @@
-from mall_security_robot.mall_security_robot import MallSecurityRobot
+from mall_security_robot import patrole
+
 
 class Main:
     def __init__(self):
-        self.patrole: MallSecurityRobot = None
-    
+        pass
+
     def start(self):
-        self.patrole = MallSecurityRobot()
-        self.patrole.start()
+        patrole.start()
 
 
 if __name__ == "__main__":
