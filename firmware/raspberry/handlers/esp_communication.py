@@ -12,6 +12,7 @@ class ESPCommunicationHandler:
             'READ_COMPASS': 'crc',
             'COMMUNICATION_TEST': 'mct',
             'TURN_OFF_BUZZER': 'tob',
+            'MOVE_FORWARD': 'cmf'
         }
 
     def __read_data_from_esp32(self, size_to_read: int) -> list[int]:
@@ -119,6 +120,16 @@ class ESPCommunicationHandler:
         data = self.__read_str_from_data_from_esp32()
 
         print(f"BUZZER STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+    
+    def move_forward(self) -> bool:
+        self.__send_data_to_esp32('MOVE_FORWARD')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"PWM MOTOR STATUS: {data}")
 
         if 'OK' in data:
             return True
