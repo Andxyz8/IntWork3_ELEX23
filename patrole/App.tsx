@@ -8,6 +8,7 @@ import StartRouting from "./pages/routing/StartRouting";
 import SaveRoute from "./pages/routing/SaveRoute";
 import ConnectBot from "./pages/home/ConnectBot";
 import RouteList from "./pages/home/RouteList";
+import Monitor from "./pages/monitoring/Monitor";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +35,11 @@ export default function App() {
         <NavigationContainer>
             <Stack.Navigator>
                 <Stack.Screen
+                    name="Monitor"
+                    component={Monitor}
+                    options={{ headerShown: false }}
+                />
+                <Stack.Screen
                     name="ConnectBot"
                     component={ConnectBot}
                     options={{ headerShown: false }}
@@ -58,6 +64,7 @@ export default function App() {
                     component={SaveRoute}
                     options={{ headerShown: false }}
                 />
+                
             </Stack.Navigator>
         </NavigationContainer>
     );
