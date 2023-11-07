@@ -36,6 +36,16 @@ void task_controller(void *params){
                     i2c_handler_send_data((uint8_t *) "OKOK");
                 }
 
+                if ((char) command_received[0] == 'm' && (char) command_received[1] == 'f') {
+                    printf("COMMAND RESPONSE FOR MOVE FORMWARD: mf\n");
+                    
+                    move_forward(40, 3);
+                    stop_motor_movement_x_seg(1);
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "MFOK");
+                }
+
                 // command: 'rc' -> read compass module
                 if ((char) command_received[0] == 'r' && (char) command_received[1] == 'c') {
                     printf("COMMAND RESPONSE FOR READ COMPASS MODULE: rc\n");
@@ -56,13 +66,13 @@ void task_controller(void *params){
                     i2c_handler_send_data(bytes_compass_value);
                 }
 
-                if ((char) command_received[0] == 'o' && (char) command_received[1] == 'b')){
+                if ((char) command_received[0] == 'o' && (char) command_received[1] == 'b') {
                     printf("COMMAND RESPONSE FOR TURN OFF BUZZER: ob\n");
                     // turn off buzzer
                     gpio_set_level(GPIO_18_BUZZER, 0);
 
                     // send information asked to raspberry
-                    i2c_handler_send_data((uint8_t *) "OKOK");
+                    i2c_handler_send_data((uint8_t *) "BZOF");
                 }
                 free(command_received);
                 printf("ENCERRANDO TRATAMENTO DA INTERRUPCAO\n");

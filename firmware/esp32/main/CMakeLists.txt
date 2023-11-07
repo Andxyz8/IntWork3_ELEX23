@@ -4,6 +4,7 @@ idf_component_register(
         "handlers/compass_module.c"
         "handlers/taskHandler.c"
         "handlers/i2cHandler.c"
+        "handlers/motor_handler.c"
         "utils/byte_operator.c"
     INCLUDE_DIRS 
         "."
