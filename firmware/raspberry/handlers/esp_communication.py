@@ -10,7 +10,8 @@ class ESPCommunicationHandler:
         self.__i2c_bus = SMBus(1)
         self.__dict_commands: dict[str, str] = {
             'READ_COMPASS': 'crc',
-            'COMMUNICATION_TEST': 'mct'
+            'COMMUNICATION_TEST': 'mct',
+            'TURN_OFF_BUZZER': 'tob',
         }
 
     def __read_data_from_esp32(self, size_to_read: int) -> list[int]:
@@ -71,6 +72,17 @@ class ESPCommunicationHandler:
 
         return float_return
 
+    def __test_i2c_communication_with_esp32(self) -> bool:
+        self.__send_data_to_esp32('COMMUNICATION_TEST')
+        esp_status = self.__read_str_from_data_from_esp32()
+
+        print(f"ESP STATUS: {esp_status}")
+
+        if 'OK' in esp_status:
+            return True
+        return False
+
+
     def get_compass_module_data(self) -> float:
         self.__send_data_to_esp32('READ_COMPASS')
         data = self.__read_float_from_data_from_esp32()
@@ -93,16 +105,6 @@ class ESPCommunicationHandler:
         except ValueError:
             return 0.0
 
-    def __test_i2c_communication_with_esp32(self) -> bool:
-        self.__send_data_to_esp32('COMMUNICATION_TEST')
-        esp_status = self.__read_str_from_data_from_esp32()
-
-        print(f"ESP STATUS: {esp_status}")
-
-        if 'OK' in esp_status:
-            return True
-        return False
-
     def test_esp32_i2c_communication(self) -> bool:
         if not self.__test_i2c_communication_with_esp32():
             while not self.__test_i2c_communication_with_esp32():
@@ -111,3 +113,13 @@ class ESPCommunicationHandler:
                 for i in [3, 2, 1]:
                     print(f"{i}...")
         return True
+
+    def turn_off_buzzer(self) -> bool:
+        self.__send_data_to_esp32('TURN_OFF_BUZZER')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"BUZZER STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
