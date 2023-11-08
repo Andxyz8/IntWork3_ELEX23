@@ -1,53 +1,57 @@
+from flask import request
 from flask_classful import FlaskView, route
-from flask import Flask, request
-from handlers.esp_communication import ESPCommunicationHandler
-from mediators.route_execution_mediator import RouteExecutionMediator
-
+from mall_security_robot import obj_patrole
 
 class AppCommunicationHandler(FlaskView):
-
     route_base = 'command'
 
-    def __init__(self, ) -> None:
-        # Instantiate a flask object
-        self.app = Flask(__name__)
-        self.__ctrl_esp_communication: ESPCommunicationHandler = None
-        self.__route_recording: RouteExecutionMediator = None
+    def __init__(self) -> None:
+        pass
 
-    @property
-    def ctrl_esp_communication(self) -> ESPCommunicationHandler:
-        return self.__ctrl_esp_communication
-
-    @ctrl_esp_communication.setter
-    def ctrl_esp_communication(self, ctrl_esp_communication: ESPCommunicationHandler):
-        self.__ctrl_esp_communication = ctrl_esp_communication
-
-    @property
-    def route_recording(self) -> RouteExecutionMediator:
-        return self.__route_recording
-
-    @route_recording.setter
-    def route_recording(self, route_recording: RouteExecutionMediator):
-        self.__route_recording = route_recording
-
-    @route('/move_forward', methods = ['GET', 'POST'])
-    def post_move_forward(self):
+    @route("/route_recording_mode", methods = ['PUT'])
+    def put_route_recording_mode(self):
         json_request = request.get_json()
 
-        print("REQUISICAO DEU BOA: ")
-        print(json_request)
+        title = json_request['title']
+        description = json_request['description']
+        n_repeats = json_request['n_repeats']
+        interval_between_repeats = json_request['interval_between_repeats']
 
-        if self.__ctrl_esp_communication is None:
-            self.__ctrl_esp_communication = ESPCommunicationHandler()
+        obj_patrole.initialize_route_recording_mode(
+            title,
+            description,
+            n_repeats,
+            interval_between_repeats
+        )
+        return {'status': 200}
 
-        self.__ctrl_esp_communication.move_forward()
+    @route("/end_route_recording_mode", methods = ['POST'])
+    def post_end_route_recording(self):
+        obj_patrole.end_route_recording_mode()
+        return {'status': 200}
 
+    @route("/recording_move_forward", methods = ['GET', 'POST'])
+    def post_move_forward(self):
+        execution_succed = obj_patrole.route_recording.move_forward()
+
+        return {"status": 200, "value": execution_succed}
+
+    @route("/route_execution_mode", methods = ['PUT'])
+    def put_route_execution_mode(self):
+        obj_patrole.initialize_route_execution_mode()
+
+        return {'status': 200}
+
+    '''@route("/go_back_initial_state", methods = ['GET', 'POST'])
+    def post_go_back_initial_state(self):
+        self.__route_execution = None
+        self.__route_recording = None
+        self.__initialize_initial_mediator()
         return {
-            'status': 200,
-            'message': 'Success move_forward'
+            "status": 200
         }
 
-    @route('/rotate_right', methods = ['GET', 'POST'])
+    @route("/rotate_right", methods = ['GET', 'POST'])
     def post_rotate_right(self):
         json_request = request.get_json()
 
@@ -59,31 +63,9 @@ class AppCommunicationHandler(FlaskView):
             'message': 'Success rotate_right'
         }
 
-    @route('/rotate_left', methods = ['GET', 'POST'])
+    @route("/rotate_left", methods = ['GET', 'POST'])
     def post_rotate_left(self):
         json_request = request.get_json()
 
         print("REQUISICAO DEU BOA: ")
-        print(json_request)
-
-        if self.__ctrl_esp_communication is None:
-            self.__ctrl_esp_communication = ESPCommunicationHandler()
-
-        self.__ctrl_esp_communication.test_esp32_i2c_communication()
-
-        return {
-            'status': 200,
-            'message': 'Success rotate_left'
-        }
-
-    def initialize_server_communication(self):
-        """StartS the communication server.
-
-        - Allows Patrole to receive commands from the mobile app.
-        """
-        # Starts the communication server
-        self.app.run(
-            host = '127.0.0.1',
-            port = '5000',
-            debug = True # Must change to False if in production
-        )
+        print(json_request)'''

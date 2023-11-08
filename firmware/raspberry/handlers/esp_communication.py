@@ -1,6 +1,5 @@
-from time import sleep as time_sleep
-from smbus2 import SMBus
 from struct import unpack
+from smbus2 import SMBus
 from numpy import nan
 
 class ESPCommunicationHandler:
@@ -9,10 +8,18 @@ class ESPCommunicationHandler:
         self.__i2c_slave_adress = 0x18
         self.__i2c_bus = SMBus(1)
         self.__dict_commands: dict[str, str] = {
-            'READ_COMPASS': 'crc',
-            'COMMUNICATION_TEST': 'mct',
-            'TURN_OFF_BUZZER': 'tob',
-            'MOVE_FORWARD': 'cmf'
+            'READ_COMPASS': 'crc', # not implemented
+            'COMMUNICATION_TEST': 'mct', # implemented
+            'TURN_OFF_BUZZER': 'tib', # not implemented
+            'TURN_ON_BUZZER': 'tab', # not implemented
+            'READ_BUZZER': 'rbs', # not implemented
+            'READ_RIGHT_ENCODER': 'rre', # not implemented
+            'READ_LEFT_ENCODER': 'rle', # not implemented
+            'MOVE_FORWARD': 'cmf', # implemented on esp
+            'MOVE_BACKWARD': 'cmb', # implemented on esp
+            'ROTATE_LEFT': 'crl', # implemented on esp
+            'ROTATE_RIGHT': 'crr', # implemented on esp
+
         }
 
     def __read_data_from_esp32(self, size_to_read: int) -> list[int]:
@@ -83,8 +90,70 @@ class ESPCommunicationHandler:
             return True
         return False
 
+    def __read_buzzer_status(self) -> int:
+        self.__send_data_to_esp32('READ_BUZZER')
+        data = self.__read_float_from_data_from_esp32()
+        retry_number = 5
+        retries = 0
+        while data == nan:
+            if retries == retry_number:
+                return 0.0
+            print(f"COMPASS MODULE DATA CORRUPTED: {data}")
+            self.__send_data_to_esp32('READ_COMPASS')
+            data = self.__read_float_from_data_from_esp32()
 
-    def get_compass_module_data(self) -> float:
+            retries += 1
+
+        print(f"COMPASS MODULE DATA: {data}")
+
+        try:
+            return round(float(data), 2)
+        except ValueError:
+            return 0.0
+
+    def __read_left_encoder_info(self) -> float:
+        self.__send_data_to_esp32('READ_LEFT_ENCODER')
+        data = self.__read_float_from_data_from_esp32()
+        retry_number = 5
+        retries = 0
+        while data == nan:
+            if retries == retry_number:
+                return 0.0
+            print(f"LEFT ENCODER DATA CORRUPTED: {data}")
+            self.__send_data_to_esp32('READ_LEFT_ENCODER')
+            data = self.__read_float_from_data_from_esp32()
+
+            retries += 1
+
+        print(f"LEFT ENCODER DATA: {data}")
+
+        try:
+            return round(float(data), 2)
+        except ValueError:
+            return 0.0
+
+    def __read_right_encoder_info(self) -> float:
+        self.__send_data_to_esp32('READ_RIGHT_ENCODER')
+        data = self.__read_float_from_data_from_esp32()
+        retry_number = 5
+        retries = 0
+        while data == nan:
+            if retries == retry_number:
+                return 0.0
+            print(f"RIGHT ENCODER DATA CORRUPTED: {data}")
+            self.__send_data_to_esp32('READ_RIGHT_ENCODER')
+            data = self.__read_float_from_data_from_esp32()
+
+            retries += 1
+
+        print(f"RIGHT ENCODER DATA: {data}")
+
+        try:
+            return round(float(data), 2)
+        except ValueError:
+            return 0.0
+
+    def __read_compass_info(self) -> float:
         self.__send_data_to_esp32('READ_COMPASS')
         data = self.__read_float_from_data_from_esp32()
 
@@ -108,12 +177,90 @@ class ESPCommunicationHandler:
 
     def test_esp32_i2c_communication(self) -> bool:
         if not self.__test_i2c_communication_with_esp32():
+            retries = 0
             while not self.__test_i2c_communication_with_esp32():
+                if retries >= 5:
+                    break
+
                 print("ESP32 I2C Communication with Raspberry Not Established.")
                 print("Retrying Connection Test 3x...")
+
                 for i in [3, 2, 1]:
                     print(f"{i}...")
+                retries += 1
+
+            if retries >= 5:
+                return False
         return True
+
+    def get_step_execution_info(self) -> dict[str, str]:
+        right_encoder = self.__read_right_encoder_info()
+
+        left_encoder = self.__read_left_encoder_info()
+
+        buzzer_status = self.__read_buzzer_status()
+
+        compass = self.__read_compass_info()
+
+        return {
+            "right_encoder": right_encoder,
+            "left_encoder": left_encoder,
+            "compass": compass,
+            "buzzer_status": buzzer_status
+        }
+
+    def get_step_recording_info(self) -> dict[str, str]:
+        right_encoder = self.__read_right_encoder_info()
+
+        left_encoder = self.__read_left_encoder_info()
+
+        compass = self.__read_compass_info()
+
+        return {
+            "right_encoder": right_encoder,
+            "left_encoder": left_encoder,
+            "compass": compass
+        }
+
+    def move_forward(self) -> bool:
+        self.__send_data_to_esp32('MOVE_FORWARD')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"PWM MOTOR STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+
+    def move_backward(self) -> bool:
+        self.__send_data_to_esp32('MOVE_BACKWARD')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"PWM MOTOR STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+
+    def rotate_left(self) -> bool:
+        self.__send_data_to_esp32('ROTATE_LEFT')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"PWM MOTOR STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+
+    def rotate_right(self) -> bool:
+        self.__send_data_to_esp32('ROTATE_RIGHT')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"PWM MOTOR STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
 
     def turn_off_buzzer(self) -> bool:
         self.__send_data_to_esp32('TURN_OFF_BUZZER')
@@ -124,12 +271,12 @@ class ESPCommunicationHandler:
         if 'OK' in data:
             return True
         return False
-    
-    def move_forward(self) -> bool:
-        self.__send_data_to_esp32('MOVE_FORWARD')
+
+    def turn_on_buzzer(self) -> bool:
+        self.__send_data_to_esp32('TURN_ON_BUZZER')
         data = self.__read_str_from_data_from_esp32()
 
-        print(f"PWM MOTOR STATUS: {data}")
+        print(f"BUZZER STATUS: {data}")
 
         if 'OK' in data:
             return True

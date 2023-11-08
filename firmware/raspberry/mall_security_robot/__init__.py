@@ -1,4 +1,5 @@
-from mall_security_robot.mall_security_robot import MallSecurityRobot
+from flask import Flask
+from mall_security_robot.patrole import Patrole
 
-
-patrole = MallSecurityRobot()
+server = Flask(__name__)
+obj_patrole = Patrole()

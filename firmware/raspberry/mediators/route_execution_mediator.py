@@ -6,7 +6,6 @@ from time import sleep as time_sleep
 
 class RouteExecutionMediator:
 
-
     def __init__(
         self,
         ctrl_database: DatabaseController,
@@ -32,56 +31,40 @@ class RouteExecutionMediator:
         return flag_success
 
     def __insert_route_execution(self) -> bool:
-        self.__id_route_execution = self.__ctrl_database.get_next_id_collection(
-            collection = 'route_execution'
-        )
-
-        data_insert = {
-            "id_route_execution": self.__id_route_execution,
-            "id_route": self.__id_route,
-            "id_robot": self.__id_robot,
-            "moment_start": get_str_datetime_agora(),
-            "moment_end": ""
-        }
-
-        self.__ctrl_database.insert_data_into_collection(
-            collection = 'route_execution',
-            info_insert = data_insert
+        self.__id_route_execution = self.__ctrl_database.insert_route_execution(
+            self.__id_route,
+            self.__id_robot
         )
 
     def __update_moment_end_route_execution(self) -> None:
-        data_insert = {
-            "id_route_execution": self.__id_route_execution,
-            "moment_end": get_str_datetime_agora()
-        }
-
-        self.__ctrl_database.update_data_into_collection(
-            collection = 'route_execution',
-            unique_id = self.__id_route_execution,
-            info_insert = data_insert
+        self.__ctrl_database.update_route_ending(
+            unique_id = self.__id_route_execution
         )
 
     def start(self) -> bool:
-        self.__notify_route_execution_state(True)
+        # self.__notify_route_execution_state(True)
         self.__insert_route_execution()
 
-        iterations = 0
-        while iterations < 10:
-            compass_module_value = self.__ctrl_esp_communication.get_compass_module_data()
 
-            self.__ctrl_notification.send_notification(
-                'sensor_reading', compass_module_value
+        print("antes de iniciar")
+        iterations = 0
+
+        while iterations < 10:
+            self.__ctrl_database.insert_camera_triggering(
+                self.__id_route_execution,
+                reason = "Testing database.",
+                image_url = 'testing.jkpg'
             )
 
+            print(f"looping {iterations}")
             if iterations == 10:
                 break
-            time_sleep(1)
+            # time_sleep(1)
             iterations += 1
 
         return True
 
     def end(self) -> bool:
-        self.__notify_route_execution_state(False)
+        # self.__notify_route_execution_state(False)
         self.__update_moment_end_route_execution()
-
         return True

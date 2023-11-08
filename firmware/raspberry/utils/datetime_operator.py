@@ -45,4 +45,3 @@ def get_str_datetime_agora():
         str: data e hora atual no formato YYYY-mm-dd HH:MM:SS.
     """
     return datetime.now().strftime('%d-%m-%Y %H:%M:%S')
-
