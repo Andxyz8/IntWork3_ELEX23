@@ -37,13 +37,51 @@ void task_controller(void *params){
                 }
 
                 if ((char) command_received[0] == 'm' && (char) command_received[1] == 'f') {
-                    printf("COMMAND RESPONSE FOR MOVE FORMWARD: mf\n");
+                    printf("COMMAND RESPONSE FOR MOVE FORWARD: mf\n");
                     
-                    move_forward(40, 3);
+                    move_forward(40, 1);
                     stop_motor_movement_x_seg(1);
 
                     // send information asked to raspberry
                     i2c_handler_send_data((uint8_t *) "MFOK");
+                }
+
+                if ((char) command_received[0] == 'f' && (char) command_received[1] == 'f') {
+                    printf("COMMAND RESPONSE FOR MOVE FORWARD FINE: ff\n");
+                    
+                    float left_float = i2c_handler_receive_float();
+                    float right_float = i2c_handler_receive_float();
+
+                    float time_in_secs_float = i2c_handler_receive_float();
+
+                    // receive a float from i2chandler and store in a int variable
+                    int time_in_secs = (int) time_in_secs_float;
+
+                    move_forward_fine(left_float, right_float, time_in_secs);
+                    stop_motor_movement_x_seg(1);
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "FFOK");
+                }
+
+                if ((char) command_received[0] == 'r' && (char) command_received[1] == 'l') {
+                    printf("COMMAND RESPONSE FOR ROTATE LEFT: rl\n");
+                    
+                    rotate_left(40, 1);
+                    stop_motor_movement_x_seg(1);
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "RLOK");
+                }
+
+                if ((char) command_received[0] == 'r' && (char) command_received[1] == 'r') {
+                    printf("COMMAND RESPONSE FOR ROTATE RIGHT: rr\n");
+
+                    rotate_right(40, 1);
+                    stop_motor_movement_x_seg(1);
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "RROK");
                 }
 
                 // command: 'rc' -> read compass module

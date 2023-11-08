@@ -35,6 +35,18 @@ uint8_t* i2c_handler_receive_command(){
     return data_received_i2c;
 }
 
+float i2c_handler_receive_float(){
+    // Allocate memory for the data
+    uint8_t *data_received_i2c = (uint8_t *) malloc(4 * sizeof(uint8_t));
+
+    // Read the i2c buffer communication directly with raspberry
+    i2c_slave_read_buffer(I2C_ESP_NUM_FOR_RASPBERRY, data_received_i2c, 4, pdMS_TO_TICKS(20));
+
+    float float_received = bytes_to_float(data_received_i2c);
+
+    return float_received;
+}
+
 void i2c_handler_send_data(uint8_t *data_to_send_i2c){
     // Send the data to raspberry
     i2c_slave_write_buffer(

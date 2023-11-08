@@ -24,3 +24,19 @@ INSERT INTO robot(
   FALSE,
   TIMESTAMP '2023-11-07 16:45:37'
 );
+
+INSERT INTO route(
+  title,
+  description,
+  status,
+  number_repeats,
+  interval_between_repeats,
+  created_at
+) VALUES(
+  'Test Route',
+  'Testing functionalities',
+  'Active',
+  3,
+  TIMESTAMP '2023-11-07 00:15:00',
+  TIMESTAMP '2023-11-07 20:23:05'
+);

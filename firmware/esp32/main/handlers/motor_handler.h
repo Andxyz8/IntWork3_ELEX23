@@ -11,4 +11,12 @@ void stop_motor_movement_x_seg(int time_in_secs);
 
 void move_forward(float speed, int time_in_secs);
 
+void move_forward_fine(float intensity_left, float intensity_right, int time_in_secs);
+
+void move_backward(float speed, int time_in_secs);
+
+void rotate_left(float speed, int time_in_secs);
+
+void rotate_right(float speed, int time_in_secs);
+
 #endif // HANDLERS_MOTOR_HANDLER_H
