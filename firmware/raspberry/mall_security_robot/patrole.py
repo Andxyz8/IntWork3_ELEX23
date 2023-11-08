@@ -74,8 +74,8 @@ class Patrole():
             ctrl_esp_communication = self.__ctrl_esp_communication
         )
 
-        self.route_execution.start()
-        self.route_execution.end()
+        # self.route_execution.start()
+        # self.route_execution.end()
 
     def start(self):
         """Starts Patrole operating firmware.

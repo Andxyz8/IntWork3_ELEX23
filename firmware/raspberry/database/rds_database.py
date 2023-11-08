@@ -54,7 +54,6 @@ class RDSDatabase:
         """
         def execute_database_operation(self, *args, **kwargs):
             self.open_connection()
-            print(f'KWARGS: {kwargs}')
             # Verifies if the operation must return the id
             try:
                 return_id = kwargs['return_id']
@@ -127,13 +126,6 @@ class RDSDatabase:
         Raises:
             NotImplementedError: raised if the connection specified is not implemented.
         """
-
-        print(self.__host)
-        print(self.__port)
-        print(self.__database)
-        print(self.__user)
-        print(self.__password)
-
         if self.__database == 'patrole_iw3':
             self.__db_connection = psql_connect(
                 host = self.__host,

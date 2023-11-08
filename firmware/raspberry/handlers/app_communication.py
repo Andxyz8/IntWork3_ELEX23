@@ -36,9 +36,31 @@ class AppCommunicationHandler(FlaskView):
 
         return {"status": 200, "value": execution_succed}
 
+    @route("/recording_move_forward_fine", methods = ['GET', 'POST'])
+    def post_move_forward_fine(self):
+        json_request = request.get_json()
+
+        time_in_seconds = json_request['time_in_seconds']
+        pwm_intensity_left = json_request['pwm_intensity_left']
+        pwm_intensity_right = json_request['pwm_intensity_right']
+
+        execution_succed = obj_patrole.route_recording.move_forward_fine(
+            pwm_intensity_left,
+            pwm_intensity_right,
+            time_in_seconds
+        )
+
+        return {"status": 200, "value": execution_succed}
+
     @route("/route_execution_mode", methods = ['PUT'])
     def put_route_execution_mode(self):
         obj_patrole.initialize_route_execution_mode()
+
+        return {'status': 200}
+    
+    @route("/turn_camera_servo_right", methods = ['POST'])
+    def post_turn_camera_servo_right(self):
+        obj_patrole.route_recording.turn_camera_servo_right()
 
         return {'status': 200}
 
