@@ -13,6 +13,10 @@ import { StyleSheet } from "react-native";
 import useBLE from "../../services/useBLE";
 import { SvgXml } from 'react-native-svg';
 
+import * as Notifications from "expo-notifications";
+import { Alert } from "react-native";
+import Constants from 'expo-constants';
+
 
 export default function Monitor({ navigation }) {
 
@@ -27,6 +31,32 @@ export default function Monitor({ navigation }) {
 
     var warning = true;
     var statusTextStyle = warning ? styles.statusBoxTextWarning : styles.statusBoxText
+
+    const handleCallNotifications = async ()=> {
+        const { status } = await Notifications.getPermissionsAsync();
+
+
+        if( status !== 'granted'){
+            Alert.alert("Você não deixou as notificações ativas");
+
+            return;
+        }
+
+        const token = await Notifications.getExpoPushTokenAsync({
+            projectId: Constants.expoConfig.extra.eas.projectId,
+          });
+        console.log(token)
+
+        // await Notifications.scheduleNotificationAsync({
+        //     content: {
+        //         title: "Exemplo",
+        //         body: "Notificacao"
+        //     },
+        //     trigger: {
+        //         seconds: 5
+        //     }
+        // });
+    }
 
 
     return (
@@ -44,8 +74,10 @@ export default function Monitor({ navigation }) {
                     <Text style={styles.statusTitle}>Status of Route 1</Text>
                 </View>
                 <View style={styles.statusBox}>
-                    <Text style={statusTextStyle}>Running between 5th and 6th ArUCo Marker</Text>
+                    <Text style={statusTextStyle}>Person detected between 8th and 6th ArUCo Marker. Robot stopped.</Text>
                 </View>
+
+
 
                 <View>
                     <Text style={styles.descriptionContainer}>
@@ -65,24 +97,28 @@ export default function Monitor({ navigation }) {
                         <Text style={styles.normalText}>4</Text>
                     </Text>
 
-                    <View style={styles.imageContainer}>
-                        <Image
-                            source={require('../../assets/example.jpg')} // Adjust the path to your image
-                            style={styles.image}
-                        />
-                        <Text>Image Captured by Patrole</Text>
-                    </View>
+                    
+                        <View style={styles.imageContainer}>
+                            <Image
+                                source={require('../../assets/example.jpg')} // Adjust the path to your image
+                                style={styles.image}
+                            />
+                            <Text>Image Captured by Patrole</Text>
+                        </View>
 
-                    <View style={styles.filler} />
+                        <View style={styles.filler} />
 
-                    <TouchableOpacity style={styles.buttonSecondary}>
-                        <Text style={styles.buttonTextSecondary}>Stop Alarm and Stop Route</Text>
-                    </TouchableOpacity>
+                        <TouchableOpacity 
+                            onPress={handleCallNotifications}
+                            style={styles.buttonSecondary}
+                            >
+                            <Text style={styles.buttonTextSecondary}>Stop Alarm and Stop Route</Text>
+                        </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.buttonPrimary}>
-                        <Text style={styles.buttonTextPrimary}>Stop Alarm and Stop Route</Text>
-                    </TouchableOpacity>
-             
+                        <TouchableOpacity style={styles.buttonPrimary}>
+                            <Text style={styles.buttonTextPrimary}>Stop Alarm and Continue Route</Text>
+                        </TouchableOpacity>
+                    
                 </View>
 
 

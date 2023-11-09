@@ -10,7 +10,21 @@ import ConnectBot from "./pages/home/ConnectBot";
 import RouteList from "./pages/home/RouteList";
 import Monitor from "./pages/monitoring/Monitor";
 
+
+// Notificacoes
+import * as Notifications from "expo-notifications";
+import { Alert } from "react-native";
+
+
 const Stack = createNativeStackNavigator();
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
 
 export default function App() {
     const {
@@ -31,13 +45,26 @@ export default function App() {
         }
     };
 
+    const handleCallNotifications = async ()=> {
+        const { status } = await Notifications.getPermissionsAsync();
+
+        if( status !== 'granted'){
+            Alert.alert("Você não deixou as notificações ativas");
+
+            return;
+        }
+
+        console.log("Notificacoes");
+    }
+
+
     return (
         <NavigationContainer>
             <Stack.Navigator>
                 <Stack.Screen
-                    name="Monitor"
-                    component={Monitor}
-                    options={{ headerShown: false }}
+                        name="Monitor"
+                        component={Monitor}
+                        options={{ headerShown: false }}
                 />
                 <Stack.Screen
                     name="ConnectBot"
