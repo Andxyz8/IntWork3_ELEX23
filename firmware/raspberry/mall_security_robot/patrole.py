@@ -9,7 +9,6 @@ from handlers.camera_handler import CameraHandler
 class Patrole():
 
     def __init__(self):
-        # Instantiate a flask object
         self.__ctrl_notification: NotificationController = None
         self.__ctrl_database: DatabaseController = None
         self.__ctrl_esp_communication: ESPCommunicationHandler = None
@@ -56,6 +55,8 @@ class Patrole():
         return True
 
     def end_route_recording_mode(self) -> bool:
+        """Turn route recording mode off.
+        """
         self.route_recording.end_route_recording()
 
     def initialize_route_execution_mode(self, id_route: int, id_robot: int) -> bool:
@@ -73,9 +74,6 @@ class Patrole():
         )
 
         self.route_execution.start()
-
-    def end_route_execution_mode(self) -> bool:
-        self.route_execution.end()
 
     def start(self):
         """Starts Patrole operating firmware.

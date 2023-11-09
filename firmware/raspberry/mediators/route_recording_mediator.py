@@ -83,7 +83,10 @@ class RouteRecordingMediator:
             time_in_seconds
         )
 
-    def end_route_recording(self) -> bool:
+    def end_route_recording(self) -> None:
+        """Format recorded steps to be properly stored at the
+            cloud database and upload to cloud database..
+        """
         self.__format_step_sequence()
         self.__ctrl_database.insert_route_steps(
             self.__id_route,

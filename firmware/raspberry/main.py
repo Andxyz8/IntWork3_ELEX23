@@ -9,9 +9,12 @@ class Main:
         )
 
     def start(self):
+        """Start the patrole firmware and the local
+            communication server for the mobile app.
+        """
         obj_patrole.start()
         server.run(
-            host = '127.0.0.1',
+            host = '0.0.0.0',
             port = '5002',
             debug = True # Must change to False if in production
         )
