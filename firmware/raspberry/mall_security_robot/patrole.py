@@ -29,8 +29,6 @@ class Patrole():
             ctrl_esp = self.__ctrl_esp_communication
         )
 
-        # self.__flag_i2c_working = self.__initial_state.test_esp32_i2c_communication()
-
     def initialize_route_recording_mode(
         self,
         title: str,
@@ -60,10 +58,8 @@ class Patrole():
     def end_route_recording_mode(self) -> bool:
         self.route_recording.end_route_recording()
 
-    def initialize_route_execution_mode(self) -> bool:
-        # dealocating resources from initial state
-        # self.__initial_state = None
-
+    def initialize_route_execution_mode(self, id_route: int, id_robot: int) -> bool:
+        """Initialize and start the route execution mediator."""
         self.__ctrl_camera = CameraHandler()
 
         self.__ctrl_notification = NotificationController(self.__ctrl_database)
@@ -71,11 +67,15 @@ class Patrole():
         self.route_execution = RouteExecutionMediator(
             ctrl_database = self.__ctrl_database,
             ctrl_notification = self.__ctrl_notification,
-            ctrl_esp_communication = self.__ctrl_esp_communication
+            ctrl_esp_communication = self.__ctrl_esp_communication,
+            id_route = id_route,
+            id_robot = id_robot
         )
 
         # self.route_execution.start()
-        # self.route_execution.end()
+
+    def end_route_execution_mode(self) -> bool:
+        self.route_execution.end()
 
     def start(self):
         """Starts Patrole operating firmware.

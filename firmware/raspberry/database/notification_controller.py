@@ -6,28 +6,22 @@ class NotificationController:
 
     def __init__(self, ctrl_database: DatabaseController) -> None:
         self.__ctrl_database: DatabaseController = ctrl_database
+        self.__id_route_execution: int = None
 
-    def send_notification(self, message: str, value: str) -> bool:
-        # pyres_notifications: PyreResponse = self.__cloud_database.child(
-        # "notifications"
-        # ).order_by_child("id_notification").get()
+    def initializa_notification_controller(self, id_route_exec: int) -> bool:
+        self.__id_route_execution = id_route_exec
+        return True
 
-        # notifications: list[Pyre] = pyres_notifications.each()
+    def inform_route_execution_status(
+        self,
+        id_route_execution: int,
+        value: str
+    ) -> bool:
+        message = "route_execution_status"
 
-        next_key = self.__ctrl_database.get_next_id_collection(
-            collection = "notification"
+        self.__ctrl_database.insert_notification(
+            id_route_execution,
+            message,
+            value
         )
-
-        dict_message = {
-            "id_notification": next_key,
-            "id_route": 1,
-            message: value,
-            "moment": get_str_datetime_agora()
-        }
-
-        self.__ctrl_database.insert_data_into_collection(
-            collection = 'notification',
-            info_insert = dict_message
-        )
-
         return True

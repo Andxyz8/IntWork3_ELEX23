@@ -22,8 +22,8 @@ class RouteExecutionMediator:
         self.__id_route: int = id_route
         self.__id_robot: int = id_robot
 
-    def __notify_route_execution_state(self, state: bool) -> bool:
-        flag_success = self.__ctrl_notification.send_notification(
+    def __notify_route_execution_state(self, state: str) -> bool:
+        flag_success = self.__ctrl_notification.inform_route_execution_status(
             message = 'route_execution_state',
             value = state
         )
@@ -42,11 +42,11 @@ class RouteExecutionMediator:
         )
 
     def start(self) -> bool:
-        # self.__notify_route_execution_state(True)
+        """Start all the proccess to perform a route execution.
+        """
         self.__insert_route_execution()
+        self.__notify_route_execution_state("Executing")
 
-
-        print("antes de iniciar")
         iterations = 0
 
         while iterations < 10:

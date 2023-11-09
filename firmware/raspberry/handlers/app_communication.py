@@ -25,7 +25,7 @@ class AppCommunicationHandler(FlaskView):
         )
         return {'status': 200}
 
-    @route("/end_route_recording_mode", methods = ['POST'])
+    @route("/end_route_recording_mode", methods = ['GET', 'POST'])
     def post_end_route_recording(self):
         obj_patrole.end_route_recording_mode()
         return {'status': 200}
@@ -36,8 +36,10 @@ class AppCommunicationHandler(FlaskView):
 
         return {"status": 200, "value": execution_succed}
 
-    @route("/recording_move_forward_fine", methods = ['GET', 'POST'])
+    
+    '''@route("/recording_move_forward_fine", methods = ['GET', 'POST'])
     def post_move_forward_fine(self):
+        # TODO: future improvements on robot navegation
         json_request = request.get_json()
 
         time_in_seconds = json_request['time_in_seconds']
@@ -50,15 +52,24 @@ class AppCommunicationHandler(FlaskView):
             time_in_seconds
         )
 
-        return {"status": 200, "value": execution_succed}
+        return {"status": 200, "value": execution_succed}'''
 
-    @route("/route_execution_mode", methods = ['PUT'])
-    def put_route_execution_mode(self):
-        obj_patrole.initialize_route_execution_mode()
+    @route("/route_execution_mode", methods = ['GET', 'POST'])
+    def post_route_execution_mode(self):
+        # Get values from json body for this request
+        json_request = request.get_json()
+
+        id_route = json_request['id_route']
+        id_robot = json_request['id_robot']
+
+        obj_patrole.initialize_route_execution_mode(
+            id_route = id_route,
+            id_robot = id_robot
+        )
 
         return {'status': 200}
-    
-    @route("/turn_camera_servo_right", methods = ['POST'])
+
+    @route("/turn_camera_servo_right", methods = ['GET', 'POST'])
     def post_turn_camera_servo_right(self):
         obj_patrole.route_recording.turn_camera_servo_right()
 

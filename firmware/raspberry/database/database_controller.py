@@ -6,53 +6,36 @@ from utils.datetime_operator import get_str_datetime_agora
 from database.rds_database import RDSDatabase
 
 class DatabaseController:
-    def __init__(self) -> None:
-        self.__firebase: Firebase = None
-        self.__cloud_database: RDSDatabase = None
-        self.__cloud_storage: Storage = None
-        self.__firebase_config = None
+    __firebase: Firebase
+    __cloud_database: RDSDatabase
+    __cloud_storage: Storage
 
+    def __init__(self) -> None:
         if not self.__initialize_firebase():
             raise Exception("It was not possible to initialize firebase.")
 
+        print(f"FIREBASE STORAGE CREDENTIALS: {self.__cloud_storage.credentials}")
+
     def __initialize_firebase(self) -> bool:
-        with open("./database/credentials.json", "r", encoding = 'utf-8') as credentials:
+
+        # Open credentials archive stored locally in the raspberry
+        with open(
+            file = "./database/credentials.json",
+            mode = "r",
+            encoding = 'utf-8'
+        ) as credentials:
             firebase_config = json_load(credentials)
 
+        # Initialize the Firebase instance to get access to the Storage
         self.__firebase = pyrebase_initialize_app(firebase_config)
 
+        # Get the instance of the Storage used
         self.__cloud_storage = self.__firebase.storage()
 
+        # Instantiate the rds cloud database operator
         self.__cloud_database = RDSDatabase()
 
         return True
-
-    def get_next_id_collection(self, collection: str) -> int:
-        url = (
-                "https://mall-security-robot-e52f0-default-rtdb.firebaseio.com/"
-                + f"{collection}.json?orderBy=%22id_{collection}%22&limitToLast=1"
-            )
-
-        response = requests_get(
-            url = url,
-            timeout = 5
-        )
-
-        print(f"URL REQUEST: {url}")
-
-        records = response.json()
-
-        for item in records:
-            record = records[item]
-            break
-
-        if response.status_code == 200:
-            last_key_inserted = record[f'id_{collection}']
-            next_key = int(last_key_inserted) + 1
-        else:
-            next_key = 1
-
-        return next_key
 
     def insert_route_recording(
         self,
@@ -147,6 +130,31 @@ class DatabaseController:
             WHERE id_route_execution = {unique_id};
         """
         self.__cloud_database.execute_update(query_update)
+
+    def insert_notification(
+        self,
+        id_route_execution: int,
+        message: str,
+        value: str
+    ) -> bool:
+        """Insert a new row into the notification table.
+        
+        - Useful to communicate current exection status to the mobile app.
+        """
+        query_insert = f"""
+            INSERT INTO notifications(
+                id_route_execution,
+                message,
+                value,
+                moment
+            ) VALUES (
+                {id_route_execution},
+                '{message}',
+                '{value}',
+                TIMESTAMP '{get_str_datetime_agora()}'
+            );
+        """
+        self.__cloud_database.execute_insert(query_insert)
 
     def insert_alarm_triggering(self) -> bool:
         """Inserts a alarm triggering at the cloud database."""
