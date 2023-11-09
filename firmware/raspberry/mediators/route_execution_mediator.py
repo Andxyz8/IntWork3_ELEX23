@@ -1,8 +1,8 @@
+from time import sleep as time_sleep
 from database.database_controller import DatabaseController
 from database.notification_controller import NotificationController
 from handlers.esp_communication import ESPCommunicationHandler
-from utils.datetime_operator import get_str_datetime_agora
-from time import sleep as time_sleep
+from pandas import DataFrame
 
 class RouteExecutionMediator:
 
@@ -24,7 +24,7 @@ class RouteExecutionMediator:
 
     def __notify_route_execution_state(self, state: str) -> bool:
         flag_success = self.__ctrl_notification.inform_route_execution_status(
-            message = 'route_execution_state',
+            id_route_execution = self.__id_route_execution,
             value = state
         )
 
@@ -36,6 +36,13 @@ class RouteExecutionMediator:
             self.__id_robot
         )
 
+    def __get_route_steps(self) -> DataFrame:
+        route_steps = self.__ctrl_database.get_route_steps(
+            id_route = self.__id_route
+        )
+
+        return route_steps
+
     def __update_moment_end_route_execution(self) -> None:
         self.__ctrl_database.update_route_ending(
             unique_id = self.__id_route_execution
@@ -45,26 +52,31 @@ class RouteExecutionMediator:
         """Start all the proccess to perform a route execution.
         """
         self.__insert_route_execution()
+        
+        route_steps = self.__get_route_steps()
+
+        print(route_steps)
+
         self.__notify_route_execution_state("Executing")
 
-        iterations = 0
+        for _, route_step in route_steps.iterrows():
+            if (route_step['right_pwm_intensity'] > 0
+                and route_step['left_pwm_intensity'] > 0
+            ):
+                flag_success = self.__ctrl_esp_communication.move_forward()
+                if flag_success:
+                    print(f"MOVEU {route_step['step_sequence']}")
+                    continue
+                while not flag_success:
+                    flag_success = self.__ctrl_esp_communication.move_forward()
+                    if flag_success:
+                        continue
+            print(f"MOVEU {route_step['step_sequence']}")
 
-        while iterations < 10:
-            self.__ctrl_database.insert_camera_triggering(
-                self.__id_route_execution,
-                reason = "Testing database.",
-                image_url = 'testing.jkpg'
-            )
-
-            print(f"looping {iterations}")
-            if iterations == 10:
-                break
-            # time_sleep(1)
-            iterations += 1
-
+        self.__end()
         return True
 
-    def end(self) -> bool:
-        # self.__notify_route_execution_state(False)
+    def __end(self) -> bool:
+        self.__notify_route_execution_state("Finalized")
         self.__update_moment_end_route_execution()
         return True

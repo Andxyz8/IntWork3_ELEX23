@@ -72,7 +72,7 @@ class Patrole():
             id_robot = id_robot
         )
 
-        # self.route_execution.start()
+        self.route_execution.start()
 
     def end_route_execution_mode(self) -> bool:
         self.route_execution.end()

@@ -1,5 +1,6 @@
 from json import load as json_load
 from requests import get as requests_get
+from pandas import DataFrame
 from pyrebase.pyrebase import Storage, Firebase
 from pyrebase import initialize_app as pyrebase_initialize_app
 from utils.datetime_operator import get_str_datetime_agora
@@ -142,7 +143,7 @@ class DatabaseController:
         - Useful to communicate current exection status to the mobile app.
         """
         query_insert = f"""
-            INSERT INTO notifications(
+            INSERT INTO notification(
                 id_route_execution,
                 message,
                 value,
@@ -155,6 +156,23 @@ class DatabaseController:
             );
         """
         self.__cloud_database.execute_insert(query_insert)
+
+    def get_route_steps(self, id_route: int) -> DataFrame:
+        query_select = f"""
+            SELECT 
+                step_sequence,
+                start_aruco_marker,
+                next_aruco_marker,
+                number_rotations_left_encoder,
+                number_rotations_right_encoder,
+                left_pwm_intensity,
+                right_pwm_intensity,
+                compass_module_degrees
+            FROM route_steps
+            WHERE id_route = {id_route};
+        """
+        df_route_steps = self.__cloud_database.execute_select(query_select)
+        return df_route_steps
 
     def insert_alarm_triggering(self) -> bool:
         """Inserts a alarm triggering at the cloud database."""
