@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
     TouchableOpacity,
     PermissionsAndroid,
@@ -9,9 +9,20 @@ import {
     TextInput,
 } from "react-native";
 import { StyleSheet } from "react-native";
-import useBLE from "../../services/useBLE";
+import raspberryAPI from "../../services/raspberryAPI";
 
 export default function RouteList({ route, navigation }) {
+    const { startRouting } = raspberryAPI();
+
+    useEffect(() => {
+        //getRoutes
+    });
+
+    function addRoute() {
+        startRouting(route.params).then((res) => {
+            if (res) navigation.navigate("RemoteControls", route.params);
+        });
+    }
     return (
         <View style={styles.container}>
             <View style={styles.header}>
@@ -27,12 +38,7 @@ export default function RouteList({ route, navigation }) {
             </View>
 
             <View>
-                <TouchableOpacity
-                    style={styles.add}
-                    onPress={() =>
-                        navigation.navigate("RemoteControls", route.params)
-                    }
-                >
+                <TouchableOpacity style={styles.add} onPress={() => addRoute()}>
                     <View>
                         <Text
                             style={{

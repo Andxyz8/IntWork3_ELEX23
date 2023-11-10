@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { StyleSheet } from "react-native";
 import { TouchableOpacity, View, Text } from "react-native";
 
@@ -6,13 +6,36 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import raspberryAPI from "../../services/raspberryAPI";
 
 export default function RemoteControls({ route, navigation }) {
-    const { sendCommand } = raspberryAPI();
+    const {
+        sendCommandFoward,
+        sendCommandLeft,
+        sendCommandRight,
+        sendCommandRead,
+    } = raspberryAPI();
     const address = route.params;
+    const [controls, setControls] = useState(false);
+    const [firstAruco, setFirstAruco] = useState(null);
 
     function sendControl(command) {
-        sendCommand(command, address).then((last) => {
-            if (last) navigation.navigate("SaveRoute", route.params);
-        });
+        if (command == "UP") {
+            sendCommandFoward(address).then((res) => {
+                setControls(!res);
+            });
+        } else if (command == "RIGHT") {
+            sendCommandRight(address).then((res) => {
+                console.log(res);
+                setControls(!res);
+            });
+        } else if (command == "LEFT") {
+            sendCommandLeft(address).then((res) => {
+                setControls(!res);
+            });
+        } else if (command == "READ") {
+            sendCommandRead(address).then((res) => {
+                if (firstAruco == res) setControls(true);
+                else if (firstAruco == null && res != null) setFirstAruco(res);
+            });
+        }
     }
 
     return (
@@ -25,6 +48,7 @@ export default function RemoteControls({ route, navigation }) {
             <View style={styles.controls}>
                 <TouchableOpacity
                     style={styles.up}
+                    disabled={controls}
                     onPress={() => sendControl("UP")}
                 >
                     <View>
@@ -39,6 +63,7 @@ export default function RemoteControls({ route, navigation }) {
 
                 <TouchableOpacity
                     style={styles.right}
+                    disabled={controls}
                     onPress={() => sendControl("RIGHT")}
                 >
                     <View>
@@ -53,6 +78,7 @@ export default function RemoteControls({ route, navigation }) {
 
                 <TouchableOpacity
                     style={styles.left}
+                    disabled={controls}
                     onPress={() => sendControl("LEFT")}
                 >
                     <View>
@@ -64,24 +90,48 @@ export default function RemoteControls({ route, navigation }) {
                         />
                     </View>
                 </TouchableOpacity>
-                <TouchableOpacity
-                    style={styles.read}
-                    //onPress={() => sendCommand(device, "READ")}
-                    onPress={() => sendControl("READ")}
-                >
-                    <View>
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                lineHeight: 70,
-                                color: "white",
-                                fontSize: 25,
-                            }}
-                        >
-                            Read ArUco
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                {!controls ? (
+                    <TouchableOpacity
+                        style={styles.read}
+                        disabled={controls}
+                        //onPress={() => sendCommand(device, "READ")}
+                        onPress={() => sendControl("READ")}
+                    >
+                        <View>
+                            <Text
+                                style={{
+                                    textAlign: "center",
+                                    lineHeight: 70,
+                                    color: "white",
+                                    fontSize: 25,
+                                }}
+                            >
+                                Read ArUco
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity
+                        style={styles.read}
+                        //onPress={() => sendCommand(device, "READ")}
+                        onPress={() =>
+                            navigation.navigate("SaveRoute", route.params)
+                        }
+                    >
+                        <View>
+                            <Text
+                                style={{
+                                    textAlign: "center",
+                                    lineHeight: 70,
+                                    color: "white",
+                                    fontSize: 25,
+                                }}
+                            >
+                                Save Route
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                )}
 
                 <TouchableOpacity
                     style={styles.cancel}

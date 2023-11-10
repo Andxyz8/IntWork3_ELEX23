@@ -15,15 +15,20 @@ export default function SaveRoute({ route, navigation }) {
     const [name, setName] = useState("");
     const [interval, setInterval] = useState("");
     const [patrols, setPatrols] = useState("");
-    const { getRecordedSteps, parseRecordedSteps } = raspberryAPI();
+    const { endRouting } = raspberryAPI();
     const address = route.params;
 
     function saveRoute() {
-        getRecordedSteps(address).then((steps) => {
-            parseRecordedSteps(steps).then((res) => {
-                console.log(name, interval, patrols);
-                if (res) navigation.navigate("RouteList", route.params);
-            });
+        console.log(name, interval, patrols);
+        let body = {
+            title: name,
+            interval_between_repeats: interval,
+            n_repeats: patrols,
+            description: "test",
+        };
+        endRouting(address, body).then((res) => {
+            if (res) navigation.navigate("RouteList", route.params);
+            else console.log("erro");
         });
     }
 

@@ -3,9 +3,12 @@ import { NetworkInfo } from "react-native-network-info";
 
 interface Api {
     getConnection(): Promise<any>;
-    getRecordedSteps(address: string): Promise<void>;
-    sendCommand(command: string, address: string): Promise<boolean>;
-    parseRecordedSteps(steps: any): Promise<boolean>;
+    sendCommandFoward(address: string): Promise<boolean>;
+    sendCommandRight(address: string): Promise<boolean>;
+    sendCommandLeft(address: string): Promise<boolean>;
+    sendCommandRead(address: string): Promise<boolean>;
+    startRouting(address: string): Promise<boolean>;
+    endRouting(address: string, body: any): Promise<boolean>;
 }
 
 function raspberryAPI(): Api {
@@ -17,8 +20,8 @@ function raspberryAPI(): Api {
 
             let ipString = ip[0] + "." + ip[1] + "." + ip[2];
 
-            for (let i = 13; i < 33; i++) {
-                address = `http://${ipString}.${i}:5000/`;
+            for (let i = 1; i <= 15; i++) {
+                address = `http://${ipString}.${i}:5002/command`;
 
                 console.log(address);
                 try {
@@ -51,51 +54,115 @@ function raspberryAPI(): Api {
         }
     };
 
-    const sendCommand = async (command, address) => {
-        const response = await fetch(address + "command", {
+    const sendCommandFoward = async (address) => {
+        const response = await fetch(address + "/recording_move_forward", {
             method: "POST",
-            body: JSON.stringify({
-                command: command,
-            }),
+            body: "",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
             },
         });
 
-        if (response.ok) {
-            const result = await response.json();
-            console.log("last: " + result.last);
-
-            return result.last;
-        } else return false;
+        if (response.ok) return true;
+        return false;
     };
 
-    const getRecordedSteps = async (address) => {
-        const response = await fetch(address + "route", {
-            method: "GET",
+    const sendCommandRight = async (address) => {
+        const response = await fetch(address + "/recording_rotate_right", {
+            method: "POST",
+            body: "",
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
             },
         });
 
-        if (response.ok) {
-            const result = await response.json();
-            console.log("steps: " + JSON.stringify(result[0]));
-            return result;
-        }
+        if (response.ok) return true;
+        return false;
+    };
+
+    const sendCommandLeft = async (address) => {
+        const response = await fetch(address + "/recording_rotate_left", {
+            method: "POST",
+            body: "",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+
+        if (response.ok) return true;
+        return false;
+    };
+
+    const sendCommandRead = async (address) => {
+        const response = await fetch(address + "/recording_read_aruco", {
+            method: "POST",
+            body: "",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+        const result = await response.json();
+
+        if (response.ok && result.aruco) return result.aruco;
         return null;
     };
 
-    const parseRecordedSteps = async (steps) => {
-        //Order by id
-        //Fix for each step
-        //Send to firebase
-        return true;
+    const startRouting = async (address) => {
+        const response = await fetch(address + "/route_recording_mode", {
+            method: "POST",
+            body: "",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+
+        if (response.ok) return true;
+        return false;
     };
 
-    return { getConnection, sendCommand, getRecordedSteps, parseRecordedSteps };
+    const endRouting = async (address, body) => {
+        console.log(body);
+        const response = await fetch(address + "/end_route_recording_mode", {
+            method: "POST",
+            body: JSON.stringify(body),
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+
+        if (response.ok) return true;
+        return false;
+    };
+
+    const startRouteExct = async (address) => {
+        const response = await fetch(address + "/route_execution_mode", {
+            method: "POST",
+            body: "",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+
+        if (response.ok) return true;
+        return false;
+    };
+
+    return {
+        getConnection,
+        sendCommandFoward,
+        sendCommandRight,
+        sendCommandLeft,
+        sendCommandRead,
+        startRouting,
+        endRouting,
+    };
 }
 
 export default raspberryAPI;
