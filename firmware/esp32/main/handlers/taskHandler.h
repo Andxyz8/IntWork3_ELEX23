@@ -10,7 +10,7 @@
 #include "freertos/queue.h"
 #include "byte_operator.h"
 #include "handlers/compass_module.h"
-#include "motor_handler.h"
+#include "handlers/motor_handler.h"
 
 
 extern QueueHandle_t task_handler_interrupt_queue;

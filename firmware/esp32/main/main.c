@@ -23,23 +23,16 @@ void app_main(){
     initialize_motor_pwm();
     printf("FINISHED STARTING MOTOR PWM HANDLER.\n");
 
+    printf("STARTING COMPASS MODULE PWM HANDLER.\n");
+    init_i2c_config_compass_module();
+    printf("FINISHED STARTING COMPASS MODULE PWM HANDLER.\n");
+
+    printf("STARTING TASK HANDLER.\n");
     initialize_interruption_handler();
     printf("FINISHED STARTING TASK HANDLER.\n");
+
     printf("FINISHED STARTING ESP32 FIRMWARE.\n");
+
+    printf("%d\n", get_compass_module_degrees());
 }
 
-/* TODO: need to validate compass module functioning*/
-
-/*
-void app_main(){
-    init_i2c_config_compass_module();
-
-    int leitura = 0;
-    while (true){
-        leitura++;
-        read_compass_module();
-        printf("Read N: %d\n", leitura);
-    }
-
-    // destroy_i2c_config_compass_module();
-}*/
