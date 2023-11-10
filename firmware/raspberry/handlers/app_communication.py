@@ -29,6 +29,24 @@ class AppCommunicationHandler(FlaskView):
         """Instantiate the route recording mode on the Raspberry Pi.
 
         Headers:
+            None
+
+        Body:
+            None
+
+        Response (JSON):
+            status (int): always 200, if successfull.
+        """
+        obj_patrole.initialize_route_recording_mode()
+        return {'status': 200}
+
+    @route("/end_route_recording_mode", methods = ['GET', 'POST'])
+    def post_end_route_recording(self):
+        """Finish the route recording mode on the Raspberry Pi.
+
+        Send all data to the cloud server and turn raspberry at initial mode again.
+
+        Headers:
             Content-Type (str): application/json
 
         Body (JSON):
@@ -47,30 +65,12 @@ class AppCommunicationHandler(FlaskView):
         n_repeats = json_request['n_repeats']
         interval_between_repeats = json_request['interval_between_repeats']
 
-        obj_patrole.initialize_route_recording_mode(
+        obj_patrole.end_route_recording_mode(
             title,
             description,
             n_repeats,
             interval_between_repeats
         )
-        return {'status': 200}
-
-    @route("/end_route_recording_mode", methods = ['GET', 'POST'])
-    def post_end_route_recording(self):
-        """Finish the route recording mode on the Raspberry Pi.
-
-        Send all data to the cloud server and turn raspberry at initial mode again.
-
-        Headers:
-            None
-
-        Body:
-            None
-
-        Response (JSON):
-            status (int): always 200, if successfull.
-        """
-        obj_patrole.end_route_recording_mode()
         return {'status': 200}
 
     @route("/recording_move_forward", methods = ['GET', 'POST'])

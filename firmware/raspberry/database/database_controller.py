@@ -38,27 +38,13 @@ class DatabaseController:
 
         return True
 
-    def insert_route_recording(
-        self,
-        title: str,
-        description: str,
-        n_repeats: int,
-        interval_between_repeats: str
-    ) -> int:
+    def insert_route_recording_start(self) -> int:
         query_insert = f"""
             INSERT INTO route(
-                title,
-                description,
                 status,
-                number_repeats,
-                interval_between_repeats,
                 created_at
             ) VALUES(
-                '{title}',
-                '{description}',
                 'Active',
-                {n_repeats},
-                TIMESTAMP '{interval_between_repeats}',
                 TIMESTAMP '{get_str_datetime_agora()}'
             ) RETURNING id_route;
         """
@@ -67,6 +53,24 @@ class DatabaseController:
             return_id = True
         )
         return id_route_execution
+
+    def update_route_recording_end(
+        self,
+        id_route: int,
+        title: str,
+        description: str,
+        n_repeats: int,
+        interval_between_repeats: str
+    ) -> None:
+        query_update = f"""
+            UPDATE route SET
+                title = {title},
+                description = {description},
+                n_repeats = {n_repeats},
+                interval_between_repeats = {interval_between_repeats}
+            WHERE id_route = {id_route};
+        """
+        self.__cloud_database.execute_update(query_update)
 
     def insert_route_steps(self, id_route: int, route_steps: dict[str, str]) -> None:
         for step in route_steps:
@@ -118,7 +122,7 @@ class DatabaseController:
         )
         return id_route_execution
 
-    def update_route_ending(self, unique_id: int) -> bool:
+    def update_route_execution_ending(self, unique_id: int) -> bool:
         """Update the ending of a route.
         
         Args:

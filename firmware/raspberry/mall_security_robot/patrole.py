@@ -28,13 +28,7 @@ class Patrole():
             ctrl_esp = self.__ctrl_esp_communication
         )
 
-    def initialize_route_recording_mode(
-        self,
-        title: str,
-        description: str,
-        n_repeats: int,
-        interval_between_repeats: str
-    ) -> bool:
+    def initialize_route_recording_mode(self) -> bool:
         # self.__initial_state = None
 
         self.__ctrl_camera = CameraHandler()
@@ -45,19 +39,25 @@ class Patrole():
             ctrl_camera = self.__ctrl_camera
         )
 
-        self.route_recording.start(
+        self.route_recording.start()
+
+        return True
+
+    def end_route_recording_mode(
+        self,
+        title: str,
+        description: str,
+        n_repeats: int,
+        interval_between_repeats: str
+    ) -> bool:
+        """Turn route recording mode off.
+        """
+        self.route_recording.end_route_recording(
             title,
             description,
             n_repeats,
             interval_between_repeats
         )
-
-        return True
-
-    def end_route_recording_mode(self) -> bool:
-        """Turn route recording mode off.
-        """
-        self.route_recording.end_route_recording()
 
     def initialize_route_execution_mode(self, id_route: int, id_robot: int) -> bool:
         """Initialize and start the route execution mediator."""

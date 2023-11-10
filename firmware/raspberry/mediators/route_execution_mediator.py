@@ -44,7 +44,7 @@ class RouteExecutionMediator:
         return route_steps
 
     def __update_moment_end_route_execution(self) -> None:
-        self.__ctrl_database.update_route_ending(
+        self.__ctrl_database.update_route_execution_ending(
             unique_id = self.__id_route_execution
         )
 
