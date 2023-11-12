@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
     TouchableOpacity,
     PermissionsAndroid,
@@ -17,6 +17,20 @@ import * as Notifications from "expo-notifications";
 import { Alert } from "react-native";
 import Constants from 'expo-constants';
 
+import firebase from '@react-native-firebase/app';
+import firestore from '@react-native-firebase/firestore';
+import storage from '@react-native-firebase/storage'
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCQWGj9ce_s0D_Z--GMk3Zv0Ko1DZLRgxc",
+    authDomain: "mall-security-robot-e52f0.firebaseapp.com",
+    projectId: "mall-security-robot-e52f0",
+    storageBucket: "mall-security-robot-e52f0.appspot.com",
+    messagingSenderId: "339307833562",
+    appId: "1:339307833562:web:3cea7b202f6a4ddfd95de3",
+    measurementId: "G-8LF452GW03",
+    databaseURL: ""
+};
 
 export default function Monitor({ navigation }) {
 
@@ -29,8 +43,34 @@ export default function Monitor({ navigation }) {
         </svg>
     `;
 
+    var imageReference = ""
+
     var warning = true;
     var statusTextStyle = warning ? styles.statusBoxTextWarning : styles.statusBoxText
+
+    const [isAlert, setIsAlert] = useState(true)
+    const [imageUrl, setImageUrl] = useState('https://i.pinimg.com/736x/43/ca/f7/43caf7050017bdae87b1a87551b00961.jpg');
+    const [imageName, setImageName] = useState('images')
+
+    useEffect(() => {
+
+        const initializeFirebase = async () => {
+            if (!firebase.apps.length) {
+                const firebaseApp = await firebase.initializeApp(firebaseConfig);
+                console.log("Firebase Initialized");
+                console.log(firebaseApp.name);
+                console.log(firebaseApp.options);
+            } else {
+                const firebaseApp = firebase.app();
+                console.log("Firebase App already initialized");
+                console.log(firebaseApp.name);
+                console.log(firebaseApp.options);
+            }
+
+          };
+        
+        initializeFirebase();
+      }, []);
 
     const handleCallNotifications = async ()=> {
         const { status } = await Notifications.getPermissionsAsync();
@@ -42,21 +82,49 @@ export default function Monitor({ navigation }) {
             return;
         }
 
-        const token = await Notifications.getExpoPushTokenAsync({
-            projectId: Constants.expoConfig.extra.eas.projectId,
-          });
-        console.log(token)
+        try {
+            // const result = await storage().ref
+            // const patroleStorage = await storage('gs://mall-security-robot-e52f0.appspot.com');
+            const reference = await storage().ref(`route_execution/${imageName}`).getDownloadURL();
+            setImageUrl(reference)
+            // reference
+            // const result = await storage().ref('janela').listAll();
+            console.log("aqui")
+            console.log(reference)
+            // const urls = await Promise.all(
+            //   result.items.map(async (item) => {
+            //     return {
+            //       name: item.name,
+            //       url: await item.getDownloadURL(),
+            //     };
+            //   })
+            // );
+            
+          } catch (error) {
+            console.error('Error listing images:', error);
+          }
+        };
+
+        
+        // console.log(firebase.database());
+
+        // const token = await Notifications.getExpoPushTokenAsync({
+        //     projectId: Constants.expoConfig.extra.eas.projectId,
+        //   });
+        // console.log(token)
 
         // await Notifications.scheduleNotificationAsync({
         //     content: {
-        //         title: "Exemplo",
-        //         body: "Notificacao"
+        //         title: "Person Detected",
+        //         body: "A person has been detected by patrole. Check the app to see more information."
         //     },
         //     trigger: {
         //         seconds: 5
         //     }
         // });
-    }
+
+        
+    
 
 
     return (
@@ -74,7 +142,7 @@ export default function Monitor({ navigation }) {
                     <Text style={styles.statusTitle}>Status of Route 1</Text>
                 </View>
                 <View style={styles.statusBox}>
-                    <Text style={statusTextStyle}>Person detected between 8th and 6th ArUCo Marker. Robot stopped.</Text>
+                    <Text style={isAlert ? styles.statusBoxTextWarning : styles.statusBoxText}>Person detected between 6th and 7th ArUCo Marker. Robot stopped.</Text>
                 </View>
 
 
@@ -96,28 +164,30 @@ export default function Monitor({ navigation }) {
                         <Text style={styles.boldText}>Number of patrols: </Text>
                         <Text style={styles.normalText}>4</Text>
                     </Text>
+                    {isAlert &&
+                    <View>
+                            <View style={styles.imageContainer}>
+                                <Image
+                                    source={{uri:imageUrl}} // Adjust the path to your image
+                                    style={styles.image}
+                                />
+                                <Text>Image Captured by Patrole</Text>
+                            </View>
 
-                    
-                        <View style={styles.imageContainer}>
-                            <Image
-                                source={require('../../assets/example.jpg')} // Adjust the path to your image
-                                style={styles.image}
-                            />
-                            <Text>Image Captured by Patrole</Text>
-                        </View>
+                            <View style={styles.filler} />
 
-                        <View style={styles.filler} />
+                            <TouchableOpacity 
+                                onPress={handleCallNotifications}
+                                style={styles.buttonSecondary}
+                                >
+                                <Text style={styles.buttonTextSecondary}>Stop Alarm and Stop Route</Text>
+                            </TouchableOpacity>
 
-                        <TouchableOpacity 
-                            onPress={handleCallNotifications}
-                            style={styles.buttonSecondary}
-                            >
-                            <Text style={styles.buttonTextSecondary}>Stop Alarm and Stop Route</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.buttonPrimary}>
-                            <Text style={styles.buttonTextPrimary}>Stop Alarm and Continue Route</Text>
-                        </TouchableOpacity>
+                            <TouchableOpacity style={styles.buttonPrimary}>
+                                <Text style={styles.buttonTextPrimary}>Stop Alarm and Continue Route</Text>
+                            </TouchableOpacity>
+                            </View>
+                    }
                     
                 </View>
 
