@@ -37,7 +37,7 @@ export default function RouteList({ route, navigation }) {
                 <Text style={styles.noRoutes}>You have no saved routes</Text>
             </View>
 
-            <View>
+            <View style={styles.addContainer}>
                 <TouchableOpacity style={styles.add} onPress={() => addRoute()}>
                     <View>
                         <Text
@@ -99,10 +99,13 @@ const styles = StyleSheet.create({
     },
     add: {
         backgroundColor: "#0864f4",
-        top: 300,
         height: 70,
         width: 400,
         borderRadius: 15,
         text: "white",
+    },
+    addContainer: {
+        position: "absolute",
+        bottom: 50,
     },
 });

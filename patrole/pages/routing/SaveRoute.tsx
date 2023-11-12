@@ -67,7 +67,7 @@ export default function SaveRoute({ route, navigation }) {
                 />
             </View>
 
-            <View>
+            <View style={styles.saveContainer}>
                 <TouchableOpacity
                     style={styles.save}
                     onPress={() => saveRoute()}
@@ -85,7 +85,8 @@ export default function SaveRoute({ route, navigation }) {
                         </Text>
                     </View>
                 </TouchableOpacity>
-
+            </View>
+            <View style={styles.cancelContainer}>
                 <TouchableOpacity
                     style={styles.cancel}
                     onPress={() =>
@@ -153,7 +154,6 @@ const styles = StyleSheet.create({
     },
     save: {
         backgroundColor: "#0864f4",
-        top: 470,
         height: 70,
         width: 400,
         borderRadius: 15,
@@ -161,7 +161,6 @@ const styles = StyleSheet.create({
     },
     cancel: {
         backgroundColor: "white",
-        top: 490,
         height: 70,
         width: 400,
         borderRadius: 15,
@@ -169,5 +168,13 @@ const styles = StyleSheet.create({
         borderColor: "#0864f4",
         borderStyle: "solid",
         borderWidth: 3,
+    },
+    saveContainer: {
+        position: "absolute",
+        bottom: 150,
+    },
+    cancelContainer: {
+        position: "absolute",
+        bottom: 50,
     },
 });

@@ -45,7 +45,7 @@ export default function RemoteControls({ route, navigation }) {
                 <Text style={styles.headerTxt2}>Routing</Text>
             </View>
 
-            <View style={styles.controls}>
+            <View style={styles.upContainer}>
                 <TouchableOpacity
                     style={styles.up}
                     disabled={controls}
@@ -60,7 +60,9 @@ export default function RemoteControls({ route, navigation }) {
                         />
                     </View>
                 </TouchableOpacity>
+            </View>
 
+            <View style={styles.rightContainer}>
                 <TouchableOpacity
                     style={styles.right}
                     disabled={controls}
@@ -75,7 +77,8 @@ export default function RemoteControls({ route, navigation }) {
                         />
                     </View>
                 </TouchableOpacity>
-
+            </View>
+            <View style={styles.leftContainer}>
                 <TouchableOpacity
                     style={styles.left}
                     disabled={controls}
@@ -90,49 +93,9 @@ export default function RemoteControls({ route, navigation }) {
                         />
                     </View>
                 </TouchableOpacity>
-                {!controls ? (
-                    <TouchableOpacity
-                        style={styles.read}
-                        disabled={controls}
-                        //onPress={() => sendCommand(device, "READ")}
-                        onPress={() => sendControl("READ")}
-                    >
-                        <View>
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    lineHeight: 70,
-                                    color: "white",
-                                    fontSize: 25,
-                                }}
-                            >
-                                Read ArUco
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity
-                        style={styles.read}
-                        //onPress={() => sendCommand(device, "READ")}
-                        onPress={() =>
-                            navigation.navigate("SaveRoute", route.params)
-                        }
-                    >
-                        <View>
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    lineHeight: 70,
-                                    color: "white",
-                                    fontSize: 25,
-                                }}
-                            >
-                                Save Route
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                )}
+            </View>
 
+            <View style={styles.cancelContainer}>
                 <TouchableOpacity
                     style={styles.cancel}
                     onPress={() =>
@@ -153,6 +116,52 @@ export default function RemoteControls({ route, navigation }) {
                     </View>
                 </TouchableOpacity>
             </View>
+            {!controls ? (
+                <View style={styles.readContainer}>
+                    <TouchableOpacity
+                        style={styles.read}
+                        disabled={controls}
+                        //onPress={() => sendCommand(device, "READ")}
+                        onPress={() => sendControl("READ")}
+                    >
+                        <View>
+                            <Text
+                                style={{
+                                    textAlign: "center",
+                                    lineHeight: 70,
+                                    color: "white",
+                                    fontSize: 25,
+                                }}
+                            >
+                                Read ArUco
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <View style={styles.readContainer}>
+                    <TouchableOpacity
+                        style={styles.read}
+                        //onPress={() => sendCommand(device, "READ")}
+                        onPress={() =>
+                            navigation.navigate("SaveRoute", route.params)
+                        }
+                    >
+                        <View>
+                            <Text
+                                style={{
+                                    textAlign: "center",
+                                    lineHeight: 70,
+                                    color: "white",
+                                    fontSize: 25,
+                                }}
+                            >
+                                Save Route
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 }
@@ -190,30 +199,24 @@ const styles = StyleSheet.create({
     },
     up: {
         backgroundColor: "#0864f4",
-        top: 400,
         height: 120,
         width: 120,
         borderRadius: 60,
     },
     right: {
         backgroundColor: "#0864f4",
-        top: 430,
-        left: 100,
         height: 120,
         width: 120,
         borderRadius: 60,
     },
     left: {
         backgroundColor: "#0864f4",
-        top: 310,
-        right: 100,
         height: 120,
         width: 120,
         borderRadius: 60,
     },
     read: {
         backgroundColor: "#0864f4",
-        top: 380,
         height: 70,
         width: 400,
         borderRadius: 15,
@@ -221,7 +224,6 @@ const styles = StyleSheet.create({
     },
     cancel: {
         backgroundColor: "white",
-        top: 400,
         height: 70,
         width: 400,
         borderRadius: 15,
@@ -229,5 +231,27 @@ const styles = StyleSheet.create({
         borderColor: "#0864f4",
         borderStyle: "solid",
         borderWidth: 3,
+    },
+    upContainer: {
+        position: "absolute",
+        bottom: 450,
+    },
+    leftContainer: {
+        position: "absolute",
+        bottom: 300,
+        left: 50,
+    },
+    rightContainer: {
+        position: "absolute",
+        bottom: 300,
+        right: 50,
+    },
+    readContainer: {
+        position: "absolute",
+        bottom: 150,
+    },
+    cancelContainer: {
+        position: "absolute",
+        bottom: 50,
     },
 });
