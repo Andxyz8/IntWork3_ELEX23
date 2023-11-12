@@ -69,6 +69,7 @@ class Patrole():
             ctrl_database = self.__ctrl_database,
             ctrl_notification = self.__ctrl_notification,
             ctrl_esp_communication = self.__ctrl_esp_communication,
+            ctrl_camera = self.__ctrl_camera,
             id_route = id_route,
             id_robot = id_robot
         )

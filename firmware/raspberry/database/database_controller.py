@@ -44,16 +44,18 @@ class DatabaseController:
             str: url of the image in the cloud storage.
         """
         # endpoint_firebase = f"route_execution/{image_unique_id}"
-        path_image_locally =  f"./handlers/.imgs/{image_unique_id}.jpg"
+        path_image_locally =  f"./handlers/.imgs/{image_unique_id}.jpeg"
 
-        self.__cloud_storage.child(
+        response = self.__cloud_storage.child(
             'route_execution'
         ).child(image_unique_id).put(path_image_locally)
 
-        path_image_storage = f"route_execution/{image_unique_id}.jpg"
+        print(f"RESPONSE: {response}")
+
+        path_image_storage = f"route_execution/{image_unique_id}"
         firebase_url_image = self.__cloud_storage.child(
             path_image_storage
-        ).get_url()
+        ).get_url(response['downloadTokens'])
 
         return firebase_url_image
 
@@ -89,7 +91,7 @@ class DatabaseController:
                 reason,
                 moment
             ) VALUES (
-                '{id_route_execution}',
+                {id_route_execution},
                 '{reason}',
                 TIMESTAMP '{get_str_datetime_agora()}'
             );
@@ -120,12 +122,12 @@ class DatabaseController:
         title: str,
         description: str,
         n_repeats: int,
-        interval_between_repeats: str
+        interval_between_repeats: float
     ) -> None:
         query_update = f"""
             UPDATE route SET
-                title = {title},
-                description = {description},
+                title = '{title}',
+                description = '{description}',
                 n_repeats = {n_repeats},
                 interval_between_repeats = {interval_between_repeats}
             WHERE id_route = {id_route};
@@ -196,7 +198,7 @@ class DatabaseController:
             image_url = firebase_image_url
         )
         self.__insert_alarm_triggering(
-            id_route_execution = triggering_reason,
+            id_route_execution = id_route_execution,
             reason = triggering_reason
         )
         return True

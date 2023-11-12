@@ -52,7 +52,7 @@ class RouteExecutionMediator:
     def __insert_route_execution_movement_detection(self, step_sequence: int) -> None:
         self.__ctrl_database.insert_route_execution_movement_detection(
             self.__id_route_execution,
-            self.__ctrl_camera.__last_image_unique_id,
+            self.__ctrl_camera.last_image_unique_id,
             step_sequence
         )
 

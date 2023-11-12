@@ -39,8 +39,6 @@ class CameraHandler:
         self.__pwm_servo = None
         self.__last_image_unique_id: str = ""
 
-        self.__install_camera_servo()
-
     @property
     def last_image_unique_id(self) -> str:
         """Return the last image unique id.
@@ -80,33 +78,38 @@ class CameraHandler:
         """Move the camera to the right side.
         """
         self.__pwm_servo.start(self.__angle_to_percent(90))
+        time_sleep(2)
         self.__pwm_servo.start(self.__angle_to_percent(0))
+        time_sleep(2)
         return True
 
     def __move_servo_from_right_to_center(self) -> bool:
         """Move the camera to the front side.
         """
         self.__pwm_servo.ChangeDutyCycle(self.__angle_to_percent(90))
+        time_sleep(2)
         return True
 
     def __move_servo_from_center_to_left(self) -> bool:
         """Move the camera to the left side.
         """
         self.__pwm_servo.ChangeDutyCycle(self.__angle_to_percent(180))
+        time_sleep(2)
         return True
 
     def __move_servo_from_left_to_center(self) -> bool:
         """Move the camera to the initial position, centralized.
         """
         self.__pwm_servo.ChangeDutyCycle(self.__angle_to_percent(90))
+        time_sleep(2)
         return True
 
     def __save_image_locally(self, image_to_save) -> None:
         """Save the image locally.
         """
-        self.__last_image_unique_id = generate_unique_id()
+        self.__last_image_unique_id = str(generate_unique_id())
 
-        path_image_to_save = f"handlers/.imgs/{self.__last_image_unique_id}.jpg"
+        path_image_to_save = f"handlers/.imgs/{self.__last_image_unique_id}.jpeg"
 
         imwrite(path_image_to_save, image_to_save)
 
@@ -116,11 +119,11 @@ class CameraHandler:
         fgbg = createBackgroundSubtractorMOG2(detectShadows = True)
 
         # Initial time
-        start_time = time_sleep()
+        start_time = this_moment()
 
         movement_detected = False
 
-        while (this_moment() - start_time) < duration:
+        while (this_moment() - start_time) < start_time + duration:
             success_capturing, image_captured = cap.read()
 
             # Check if we get the frame
@@ -182,6 +185,7 @@ class CameraHandler:
         return movement_detected
 
     def movement_detection_routine(self):
+        # TODO: review this part (time_sleep) not working very well
         self.__install_camera_servo()
 
         self.__move_servo_from_center_to_right()
