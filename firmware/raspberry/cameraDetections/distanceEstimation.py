@@ -89,11 +89,11 @@ def detectAruko():
                     cv.LINE_AA,
                 )
 
-                return 1, center_x - centerTela_x, distance
+                return 1, center_x - centerTela_x, distance, ids[0]
     else:
         # Redefinir o contador se o marcador não for detectado neste frame
         detected_count = 0
-        return 0, 0, 0
+        return 0, 0, 0, 0
 
     # cv.imshow("frame", frame)
     # key = cv.waitKey(0)
