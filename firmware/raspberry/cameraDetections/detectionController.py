@@ -1,6 +1,7 @@
 
 from yolo import detectPerson
 from background import detectMovement
+from distanceEstimation import detectAruco
 
 
 def detect(duration):
@@ -9,4 +10,5 @@ def detect(duration):
 
     return (movement or person)
 
-detect(3)
+def detectMarker():
+    return detectAruco()
