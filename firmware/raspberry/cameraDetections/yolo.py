@@ -26,7 +26,7 @@ def detectPerson():
     cap.release()
 
     # Load YOLO model
-    net = cv2.dnn.readNet("./yolov3.weights", "./darknet/cfg/yolov3.cfg")
+    net = cv2.dnn.readNet("./yolov3.weights", "./yolov3.cfg")
 
     # Define input image
     image = cv2.imread("image.jpg")
@@ -91,3 +91,4 @@ def detectPerson():
     else:
         return True
     
+detectPerson()
