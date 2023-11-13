@@ -44,19 +44,8 @@ class RouteRecordingMediator:
         for step in self.__route_steps:
             step['step_sequence'] += f'{last}'
 
-    def __insert_new_route(
-        self,
-        title: str,
-        description: str,
-        n_repeats: int,
-        interval_between_repeats: str
-    ):
-        self.__id_route = self.__ctrl_database.insert_route_recording(
-            title,
-            description,
-            n_repeats,
-            interval_between_repeats
-        )
+    def __insert_new_route(self):
+        self.__id_route = self.__ctrl_database.insert_route_recording_start()
 
     def turn_camera_servo_right(self) -> bool:
         self.__ctrl_camera.turn_servo(30)
@@ -83,23 +72,53 @@ class RouteRecordingMediator:
             time_in_seconds
         )
 
-    def end_route_recording(self) -> bool:
-        self.__format_step_sequence()
-        self.__ctrl_database.insert_route_steps(
-            self.__id_route,
-            self.__route_steps
-        )
-
-    def start(
+    def __update_route_information(
         self,
         title: str,
         description: str,
         n_repeats: int,
         interval_between_repeats: str
-    ):
-        self.__insert_new_route(
+    ) -> None:
+        self.__id_route = self.__ctrl_database.update_route_recording_end(
+            self.__id_route,
             title,
             description,
             n_repeats,
             interval_between_repeats
         )
+
+    def end_route_recording(
+        self,
+        title: str,
+        description: str,
+        n_repeats: int,
+        interval_between_repeats: str
+    ) -> None:
+        """Executes some operations to properly finish the route recording proccess.
+
+        - Update basic route information as title, description number of times 
+            to repeat the route execution, and the interval between routes.
+        - Format recorded steps to be properly stored at the cloud database
+            and upload to cloud database.
+        """
+        self.__update_route_information(
+            title,
+            description,
+            n_repeats,
+            interval_between_repeats
+        )
+
+        self.__format_step_sequence()
+
+        self.__ctrl_database.insert_route_steps(
+            self.__id_route,
+            self.__route_steps
+        )
+
+    def start(self):
+        """Starts the proccess of recording a route.
+        
+        - Insert the initial values for the route into the database.
+        - Keeps the route id that was inserted to later updates to the route info.
+        """
+        self.__insert_new_route()

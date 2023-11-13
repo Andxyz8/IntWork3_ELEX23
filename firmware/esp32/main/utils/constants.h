@@ -37,26 +37,22 @@
 // ***** I2C COMPASS MODULE RELATED CONSTANTS ***** //
 
 // Defines the GPIO pin for I2C SDA with Compass Module
-#define GPIO_23_I2C_SDA_CMD 21 // TODO: change this pin
+#define GPIO_23_I2C_SDA_CMD 15
 
 // Defines the GPIO pin for I2C SCL with Compass Module
-#define GPIO_19_I2C_SCL_CMD 22 // TODO: change this pin
+#define GPIO_19_I2C_SCL_CMD 2
 
 // Defines the max speed for the I2C master with Compass Module
-#define I2C_MASTER_MAX_SPEED 1000
+#define I2C_MASTER_MAX_SPEED 100000
 
 // Defines the I2C slave port for the compass module
-#define I2C_COMPASS_MODULE_ADDRESS 0x1E
-
-// Defines the I2C mode with compass module
-#define I2C_ESP_MODE_WITH_COMPASS_MODULE I2C_MODE_MASTER
+#define I2C_COMPASS_MODULE_ADDRESS 0x0D
 
 // Defines the I2C number for communicating with compass module
 #define I2C_ESP_NUM_FOR_COMPASS_MODULE I2C_NUM_1
-/*
-    TODO: if using i2c, must be different
-    from raspberry and esp32 communication i2c_num
-*/ 
+
+// Defines the I2C mode with compass module
+#define I2C_ESP_MODE_WITH_COMPASS_MODULE I2C_MODE_MASTER
 
 // ***** I2C COMPASS MODULE RELATED CONSTANTS ***** //
 

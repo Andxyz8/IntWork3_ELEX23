@@ -88,13 +88,11 @@ void task_controller(void *params){
                 if ((char) command_received[0] == 'r' && (char) command_received[1] == 'c') {
                     printf("COMMAND RESPONSE FOR READ COMPASS MODULE: rc\n");
                     // get the compass value
-                    float compass_value;
-                    // TODO: routine to read/get compass value
-                    compass_value = 75.37;
+                    int compass_value = get_compass_module_degrees();
 
                     // convert compass value to bytes
                     uint8_t *bytes_compass_value;
-                    bytes_compass_value = float_to_bytes(compass_value);
+                    bytes_compass_value = int_to_bytes(compass_value);
 
                     // for (int i = 0; i < 4; i++){
                     //     printf("BYTE %d: %d\n", i, bytes_compass_value[i]);

@@ -14,3 +14,11 @@ float bytes_to_float(uint8_t *bytes_value) {
 
     return *float_value;
 }
+
+uint8_t* int_to_bytes(int int_value){
+    uint8_t *bytes_value = (uint8_t *) malloc(4);
+
+    memcpy(bytes_value, (uint8_t *) (&int_value), 4);
+
+    return bytes_value;
+}

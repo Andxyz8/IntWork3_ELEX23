@@ -9,7 +9,6 @@ from handlers.camera_handler import CameraHandler
 class Patrole():
 
     def __init__(self):
-        # Instantiate a flask object
         self.__ctrl_notification: NotificationController = None
         self.__ctrl_database: DatabaseController = None
         self.__ctrl_esp_communication: ESPCommunicationHandler = None
@@ -29,15 +28,7 @@ class Patrole():
             ctrl_esp = self.__ctrl_esp_communication
         )
 
-        # self.__flag_i2c_working = self.__initial_state.test_esp32_i2c_communication()
-
-    def initialize_route_recording_mode(
-        self,
-        title: str,
-        description: str,
-        n_repeats: int,
-        interval_between_repeats: str
-    ) -> bool:
+    def initialize_route_recording_mode(self) -> bool:
         # self.__initial_state = None
 
         self.__ctrl_camera = CameraHandler()
@@ -48,22 +39,28 @@ class Patrole():
             ctrl_camera = self.__ctrl_camera
         )
 
-        self.route_recording.start(
+        self.route_recording.start()
+
+        return True
+
+    def end_route_recording_mode(
+        self,
+        title: str,
+        description: str,
+        n_repeats: int,
+        interval_between_repeats: str
+    ) -> bool:
+        """Turn route recording mode off.
+        """
+        self.route_recording.end_route_recording(
             title,
             description,
             n_repeats,
             interval_between_repeats
         )
 
-        return True
-
-    def end_route_recording_mode(self) -> bool:
-        self.route_recording.end_route_recording()
-
-    def initialize_route_execution_mode(self) -> bool:
-        # dealocating resources from initial state
-        # self.__initial_state = None
-
+    def initialize_route_execution_mode(self, id_route: int, id_robot: int) -> bool:
+        """Initialize and start the route execution mediator."""
         self.__ctrl_camera = CameraHandler()
 
         self.__ctrl_notification = NotificationController(self.__ctrl_database)
@@ -71,11 +68,13 @@ class Patrole():
         self.route_execution = RouteExecutionMediator(
             ctrl_database = self.__ctrl_database,
             ctrl_notification = self.__ctrl_notification,
-            ctrl_esp_communication = self.__ctrl_esp_communication
+            ctrl_esp_communication = self.__ctrl_esp_communication,
+            ctrl_camera = self.__ctrl_camera,
+            id_route = id_route,
+            id_robot = id_robot
         )
 
-        # self.route_execution.start()
-        # self.route_execution.end()
+        self.route_execution.start()
 
     def start(self):
         """Starts Patrole operating firmware.
