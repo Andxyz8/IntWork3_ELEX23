@@ -9,7 +9,21 @@ interface Api {
     sendCommandRead(address: string): Promise<boolean>;
     startRouting(address: string): Promise<boolean>;
     endRouting(address: string, body: any): Promise<boolean>;
+    getRoutes(): Promise<Route[]>;
+    startRouteExct(address: string, id_route: any): Promise<boolean>;
 }
+
+interface Route {
+    id_route: number;
+    title: string;
+    description: string;
+    status: boolean;
+    number_repeats: number;
+    created_at: Date;
+    interval_between_repeats: number;
+}
+
+const server = "http://192.168.0.13:3001";
 
 function raspberryAPI(): Api {
     const getConnection = async () => {
@@ -20,10 +34,9 @@ function raspberryAPI(): Api {
 
             let ipString = ip[0] + "." + ip[1] + "." + ip[2];
 
-            for (let i = 1; i <= 15; i++) {
+            for (let i = 13; i <= 15; i++) {
                 address = `http://${ipString}.${i}:5002/command`;
 
-                console.log(address);
                 try {
                     const response = await fetch(address, {
                         method: "GET",
@@ -36,7 +49,6 @@ function raspberryAPI(): Api {
                     const result = await response.json();
 
                     if (response.ok && result.found) {
-                        console.log("FOUND: " + result);
                         return address;
                     }
                 } catch (error) {
@@ -126,7 +138,6 @@ function raspberryAPI(): Api {
     };
 
     const endRouting = async (address, body) => {
-        console.log(body);
         const response = await fetch(address + "/end_route_recording_mode", {
             method: "POST",
             body: JSON.stringify(body),
@@ -140,10 +151,15 @@ function raspberryAPI(): Api {
         return false;
     };
 
-    const startRouteExct = async (address) => {
+    const startRouteExct = async (address, id_route) => {
+        let body = {
+            id_route: id_route,
+            id_robot: 1,
+        };
+
         const response = await fetch(address + "/route_execution_mode", {
             method: "POST",
-            body: "",
+            body: JSON.stringify(body),
             headers: {
                 "Content-Type": "application/json",
                 Accept: "application/json",
@@ -154,6 +170,40 @@ function raspberryAPI(): Api {
         return false;
     };
 
+    const connect = async () => {
+        const response = await fetch(server + "/connect", {
+            method: "get",
+            headers: {
+                "Content-Type": "application/json",
+                Accept: "application/json",
+            },
+        });
+
+        if (response.ok) return true;
+        return false;
+    };
+
+    const getRoutes = async () => {
+        let routes: Route[] = [];
+        return connect().then(async (res) => {
+            if (res) {
+                const response = await fetch(server + "/routes", {
+                    method: "get",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                });
+
+                const result = await response.json();
+
+                routes = result;
+
+                return routes;
+            }
+        });
+    };
+
     return {
         getConnection,
         sendCommandFoward,
@@ -162,6 +212,8 @@ function raspberryAPI(): Api {
         sendCommandRead,
         startRouting,
         endRouting,
+        getRoutes,
+        startRouteExct,
     };
 }
 

@@ -7,19 +7,54 @@ import {
     Platform,
     SafeAreaView,
     TextInput,
+    ScrollView,
 } from "react-native";
 import { StyleSheet } from "react-native";
 import raspberryAPI from "../../services/raspberryAPI";
+import { ScrollableComponent } from "react-native-keyboard-aware-scroll-view";
+
+interface Route {
+    id_route: number;
+    title: string;
+    description: string;
+    status: boolean;
+    number_repeats: number;
+    created_at: Date;
+    interval_between_repeats: number;
+}
 
 export default function RouteList({ route, navigation }) {
-    const { startRouting } = raspberryAPI();
+    const { startRouting, getRoutes, startRouteExct } = raspberryAPI();
+
+    const [routes, setRoutes] = useState<Route[]>([]);
+    const [flag, setFlag] = useState(false);
+
+    const address = route.params;
 
     useEffect(() => {
-        //getRoutes
-    });
+        getRoute();
+    }, []);
+
+    useEffect(() => {
+        console.log("MUDOU " + flag);
+    }, [flag]);
+
+    async function getRoute() {
+        if (routes.length == 0) {
+            let routs = await getRoutes();
+            setRoutes(routs);
+            setFlag(!flag);
+        }
+    }
 
     function addRoute() {
         startRouting(route.params).then((res) => {
+            if (res) navigation.navigate("RemoteControls", route.params);
+        });
+    }
+
+    function executeRoute(id_route: any) {
+        startRouteExct(address, route.id_route).then((res) => {
             if (res) navigation.navigate("RemoteControls", route.params);
         });
     }
@@ -33,9 +68,42 @@ export default function RouteList({ route, navigation }) {
                 <Text style={styles.routesTitle}>Your Routes</Text>
             </View>
 
-            <View>
-                <Text style={styles.noRoutes}>You have no saved routes</Text>
-            </View>
+            <ScrollView style={styles.scrollView}>
+                {routes.length > 0 ? (
+                    <>
+                        {routes.map((route) => {
+                            return (
+                                <View style={styles.routeContainer}>
+                                    <TouchableOpacity
+                                        onPress={() =>
+                                            executeRoute(route.id_route)
+                                        }
+                                        style={styles.routeText}
+                                    >
+                                        <Text style={styles.routeTitle}>
+                                            {route.title}
+                                        </Text>
+                                        <Text>
+                                            Interval between routes:{" "}
+                                            {route.interval_between_repeats}
+                                        </Text>
+                                        <Text>
+                                            Number of patrols:{" "}
+                                            {route.number_repeats}
+                                        </Text>
+                                    </TouchableOpacity>
+                                </View>
+                            );
+                        })}
+                    </>
+                ) : (
+                    <View>
+                        <Text style={styles.noRoutes}>
+                            You have no saved routes
+                        </Text>
+                    </View>
+                )}
+            </ScrollView>
 
             <View style={styles.addContainer}>
                 <TouchableOpacity style={styles.add} onPress={() => addRoute()}>
@@ -107,5 +175,26 @@ const styles = StyleSheet.create({
     addContainer: {
         position: "absolute",
         bottom: 50,
+    },
+    routeContainer: {
+        marginTop: 10,
+        marginHorizontal: 20,
+        borderRadius: 10,
+        borderColor: "black",
+        borderStyle: "solid",
+        borderWidth: 3,
+        text: "white",
+    },
+    routeText: {
+        marginHorizontal: 10,
+        paddingBottom: 3,
+    },
+    routeTitle: {
+        fontSize: 20,
+        fontWeight: "bold",
+    },
+    scrollView: {
+        width: `${100}%`,
+        maxHeight: `${55}%`,
     },
 });
