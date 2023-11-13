@@ -44,7 +44,6 @@ app.get("/routes", function (req, res) {
         if (err) {
             return console.error("error running query", err);
         }
-        console.log(result);
         res.send(result.rows);
 
         return;
@@ -73,8 +72,6 @@ app.get("/disconnect", function (req, res) {
     });
 });
 
-app.listen(3000, () => {
-    console.log(
-        "Vai no navegador e entra em http://localhost:3000/users pra ver os usuários cadastrados."
-    );
+app.listen(3001, "0.0.0.0", () => {
+    console.log("Vai no navegador e entra em http://192.168.0.13:3001/");
 });
