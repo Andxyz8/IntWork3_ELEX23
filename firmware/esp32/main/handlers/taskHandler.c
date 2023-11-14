@@ -102,6 +102,33 @@ void task_controller(void *params){
                     i2c_handler_send_data(bytes_compass_value);
                 }
 
+                if ((char) command_received[0] == 's' && (char) command_received[1] == 'm') {
+                    printf("COMMAND RESPONSE FOR SET SERVO MIDDLE ANGLE: sm\n");
+                    // set servo middle angle
+                    set_servo_middle_angle();
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "SMOK");
+                }
+
+                if ((char) command_received[0] == 's' && (char) command_received[1] == 'f') {
+                    printf("COMMAND RESPONSE FOR SET SERVO FULL ANGLE: sf\n");
+                    // set servo full angle
+                    set_servo_full_angle();
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "SFOK");
+                }
+
+                if ((char) command_received[0] == 's' && (char) command_received[1] == 'z') {
+                    printf("COMMAND RESPONSE FOR SET SERVO ZERO ANGLE: sz\n");
+                    // set servo zero angle
+                    set_servo_zero_angle();
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "SZOK");
+                }
+
                 if ((char) command_received[0] == 'o' && (char) command_received[1] == 'b') {
                     printf("COMMAND RESPONSE FOR TURN OFF BUZZER: ob\n");
                     // turn off buzzer

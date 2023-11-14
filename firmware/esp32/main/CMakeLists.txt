@@ -5,6 +5,7 @@ idf_component_register(
         "handlers/taskHandler.c"
         "handlers/i2cHandler.c"
         "handlers/motor_handler.c"
+        "handlers/ledc_servo_motor.c"
         "utils/byte_operator.c"
     INCLUDE_DIRS 
         "."

@@ -47,11 +47,11 @@ void stop_motor_movement_x_seg(int time_in_secs){
  * @param speed (float) Speed that both motors will perform the movement.
  * @param time_in_secs (int) Time in seconds to be performing the movement.
 */
-void move_forward(float speed, int time_in_secs){
-    mcpwm_set_duty(PWM_UNIT_LEFT, PWM_TIMER_LEFT, PWM_GEN_F, speed);
+void move_forward(float pwm_left, float pwm_right, int time_in_secs){
+    mcpwm_set_duty(PWM_UNIT_LEFT, PWM_TIMER_LEFT, PWM_GEN_F, pwm_left);
     mcpwm_set_duty(PWM_UNIT_LEFT, PWM_TIMER_LEFT, PWM_GEN_R, 0.0);
 
-    mcpwm_set_duty(PWM_UNIT_RIGHT, PWM_TIMER_RIGHT, PWM_GEN_F, speed);
+    mcpwm_set_duty(PWM_UNIT_RIGHT, PWM_TIMER_RIGHT, PWM_GEN_F, pwm_right);
     mcpwm_set_duty(PWM_UNIT_RIGHT, PWM_TIMER_RIGHT, PWM_GEN_R, 0.0);
     vTaskDelay((time_in_secs * 1000) / portTICK_PERIOD_MS);
 }
