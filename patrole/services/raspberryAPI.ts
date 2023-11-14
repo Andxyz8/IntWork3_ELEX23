@@ -34,7 +34,7 @@ function raspberryAPI(): Api {
 
             let ipString = ip[0] + "." + ip[1] + "." + ip[2];
 
-            for (let i = 13; i <= 15; i++) {
+            for (let i = 1; i <= 15; i++) {
                 address = `http://${ipString}.${i}:5002/command`;
 
                 try {
