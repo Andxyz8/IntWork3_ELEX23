@@ -12,6 +12,7 @@ import {
 import { StyleSheet } from "react-native";
 import raspberryAPI from "../../services/raspberryAPI";
 import { ScrollableComponent } from "react-native-keyboard-aware-scroll-view";
+import { useFocusEffect } from "@react-navigation/native";
 
 interface Route {
     id_route: number;
@@ -31,25 +32,24 @@ export default function RouteList({ route, navigation }) {
 
     const address = route.params;
 
-    useEffect(() => {
-        getRoute();
-    }, []);
+    useFocusEffect(
+        React.useCallback(() => {
+            getRoutes().then((res) => {
+                setRoutes(res);
+                setFlag(!flag);
+            });
+        }, [])
+    );
 
-    useEffect(() => {
-        console.log("MUDOU " + flag);
-    }, [flag]);
-
-    async function getRoute() {
-        if (routes.length == 0) {
-            let routs = await getRoutes();
-            setRoutes(routs);
-            setFlag(!flag);
-        }
-    }
+    useEffect(() => {}, [flag]);
 
     function addRoute() {
         startRouting(route.params).then((res) => {
-            if (res) navigation.navigate("RemoteControls", route.params);
+            if (res) {
+                setRoutes([]);
+                setFlag(!flag);
+                navigation.navigate("RemoteControls", route.params);
+            }
         });
     }
 
@@ -73,7 +73,10 @@ export default function RouteList({ route, navigation }) {
                     <>
                         {routes.map((route) => {
                             return (
-                                <View style={styles.routeContainer}>
+                                <View
+                                    key={route.id_route}
+                                    style={styles.routeContainer}
+                                >
                                     <TouchableOpacity
                                         onPress={() =>
                                             executeRoute(route.id_route)
@@ -158,7 +161,7 @@ const styles = StyleSheet.create({
         width: "90%",
     },
     noRoutes: {
-        position: "relative",
+        textAlign: "center",
         opacity: 0.5,
         color: "black",
         fontSize: 25,
