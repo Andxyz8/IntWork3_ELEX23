@@ -32,8 +32,8 @@ interface Notification {
     moment: Date;
 }
 
-//mudar para ip local
-const server = "http://192.168.0.13:3001";
+//AWS server ip
+const server = "http://107.20.130.209:3001";
 
 function raspberryAPI(): Api {
     const getConnection = async () => {
