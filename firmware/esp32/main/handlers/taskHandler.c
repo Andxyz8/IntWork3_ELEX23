@@ -39,7 +39,7 @@ void task_controller(void *params){
                 if ((char) command_received[0] == 'm' && (char) command_received[1] == 'f') {
                     printf("COMMAND RESPONSE FOR MOVE FORWARD: mf\n");
                     
-                    move_forward(40, 1);
+                    move_forward(48, 50, 1);
                     stop_motor_movement_x_seg(1);
 
                     // send information asked to raspberry

@@ -1,5 +1,5 @@
-#ifndef HANDLERS_TASK_HANDLER_H
-#define HANDLERS_TASK_HANDLER_H
+#ifndef HANDLERS_LEDC_SERVO_MOTOR_H
+#define HANDLERS_LEDC_SERVO_MOTOR_H
 
 #include "driver/ledc.h"
 
@@ -25,4 +25,4 @@ void set_servo_full_angle();
 
 void set_servo_zero_angle();
 
-#endif // HANDLERS_TASK_HANDLER_H
+#endif // HANDLERS_LEDC_SERVO_MOTOR_H
