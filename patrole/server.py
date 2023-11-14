@@ -72,17 +72,13 @@ def post_move_forward_fine():
 
     return {"status": 200, "value": execution_succed}
 
-@app.route("/route_execution_mode", methods = ['GET', 'POST'])
-def post_route_execution_mode(self):
+@app.route("/command/route_execution_mode", methods = ['GET', 'POST'])
+def post_route_execution_mode():
     json_request = request.get_json()
 
     id_route = json_request['id_route']
     id_robot = json_request['id_robot']
-
-    obj_patrole.initialize_route_execution_mode(
-        id_route = id_route,
-        id_robot = id_robot
-    )
+    print(id_route, id_robot)
 
     return {'status': 200}
 

@@ -11,6 +11,7 @@ interface Api {
     endRouting(address: string, body: any): Promise<boolean>;
     getRoutes(): Promise<Route[]>;
     startRouteExct(address: string, id_route: any): Promise<boolean>;
+    getNotifications(id: string): Promise<Notification[]>;
 }
 
 interface Route {
@@ -23,6 +24,15 @@ interface Route {
     interval_between_repeats: number;
 }
 
+interface Notification {
+    id_notification: number;
+    id_route_execution: number;
+    message: string;
+    value: string;
+    moment: Date;
+}
+
+//mudar para ip local
 const server = "http://192.168.0.13:3001";
 
 function raspberryAPI(): Api {
@@ -34,7 +44,7 @@ function raspberryAPI(): Api {
 
             let ipString = ip[0] + "." + ip[1] + "." + ip[2];
 
-            for (let i = 1; i <= 15; i++) {
+            for (let i = 13; i <= 15; i++) {
                 address = `http://${ipString}.${i}:5002/command`;
 
                 try {
@@ -153,8 +163,8 @@ function raspberryAPI(): Api {
 
     const startRouteExct = async (address, id_route) => {
         let body = {
-            id_route: id_route,
-            id_robot: 1,
+            id_route: String(id_route),
+            id_robot: "1",
         };
 
         const response = await fetch(address + "/route_execution_mode", {
@@ -204,6 +214,27 @@ function raspberryAPI(): Api {
         });
     };
 
+    const getNotifications = async (id: string) => {
+        let notifications: Notification[] = [];
+        return connect().then(async (res) => {
+            if (res) {
+                const response = await fetch(server + `/notification/${id}`, {
+                    method: "get",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                });
+
+                const result = await response.json();
+
+                notifications = result;
+
+                return notifications;
+            }
+        });
+    };
+
     return {
         getConnection,
         sendCommandFoward,
@@ -214,6 +245,7 @@ function raspberryAPI(): Api {
         endRouting,
         getRoutes,
         startRouteExct,
+        getNotifications,
     };
 }
 

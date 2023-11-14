@@ -54,8 +54,10 @@ export default function RouteList({ route, navigation }) {
     }
 
     function executeRoute(id_route: any) {
-        startRouteExct(address, route.id_route).then((res) => {
-            if (res) navigation.navigate("RemoteControls", route.params);
+        startRouteExct(address, id_route).then((res) => {
+            setRoutes([]);
+            setFlag(!flag);
+            if (res) navigation.navigate("Monitor", route.params);
         });
     }
     return (

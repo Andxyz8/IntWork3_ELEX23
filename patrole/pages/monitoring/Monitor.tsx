@@ -11,15 +11,16 @@ import {
 } from "react-native";
 import { StyleSheet } from "react-native";
 import useBLE from "../../services/useBLE";
-import { SvgXml } from 'react-native-svg';
+import { SvgXml } from "react-native-svg";
 
 import * as Notifications from "expo-notifications";
 import { Alert } from "react-native";
-import Constants from 'expo-constants';
+import Constants from "expo-constants";
 
-import firebase from '@react-native-firebase/app';
-import firestore from '@react-native-firebase/firestore';
-import storage from '@react-native-firebase/storage'
+import firebase from "@react-native-firebase/app";
+import firestore from "@react-native-firebase/firestore";
+import storage from "@react-native-firebase/storage";
+import raspberryAPI from "../../services/raspberryAPI";
 
 const firebaseConfig = {
     apiKey: "AIzaSyCQWGj9ce_s0D_Z--GMk3Zv0Ko1DZLRgxc",
@@ -29,10 +30,11 @@ const firebaseConfig = {
     messagingSenderId: "339307833562",
     appId: "1:339307833562:web:3cea7b202f6a4ddfd95de3",
     measurementId: "G-8LF452GW03",
-    databaseURL: ""
+    databaseURL: "",
 };
 
-export default function Monitor({ navigation }) {
+export default function Monitor({ route, navigation }) {
+    const { getNotifications } = raspberryAPI();
 
     const logoImage = `
         <?xml version="1.0" encoding="utf-8"?>
@@ -43,20 +45,28 @@ export default function Monitor({ navigation }) {
         </svg>
     `;
 
-    var imageReference = ""
+    var imageReference = "";
 
     var warning = true;
-    var statusTextStyle = warning ? styles.statusBoxTextWarning : styles.statusBoxText
+    var statusTextStyle = warning
+        ? styles.statusBoxTextWarning
+        : styles.statusBoxText;
 
-    const [isAlert, setIsAlert] = useState(true)
-    const [imageUrl, setImageUrl] = useState('https://i.pinimg.com/736x/43/ca/f7/43caf7050017bdae87b1a87551b00961.jpg');
-    const [imageName, setImageName] = useState('images')
+    const [isAlert, setIsAlert] = useState(true);
+    const [imageUrl, setImageUrl] = useState(
+        "https://i.pinimg.com/736x/43/ca/f7/43caf7050017bdae87b1a87551b00961.jpg"
+    );
+    const [imageName, setImageName] = useState("images");
 
     useEffect(() => {
+        //TODO pooling every 30 seconds to notificaiton
+        //TODO save notification id when resolved
 
         const initializeFirebase = async () => {
             if (!firebase.apps.length) {
-                const firebaseApp = await firebase.initializeApp(firebaseConfig);
+                const firebaseApp = await firebase.initializeApp(
+                    firebaseConfig
+                );
                 console.log("Firebase Initialized");
                 console.log(firebaseApp.name);
                 console.log(firebaseApp.options);
@@ -66,17 +76,15 @@ export default function Monitor({ navigation }) {
                 console.log(firebaseApp.name);
                 console.log(firebaseApp.options);
             }
+        };
 
-          };
-        
         initializeFirebase();
-      }, []);
+    }, []);
 
-    const handleCallNotifications = async ()=> {
+    const handleCallNotifications = async () => {
         const { status } = await Notifications.getPermissionsAsync();
 
-
-        if( status !== 'granted'){
+        if (status !== "granted") {
             Alert.alert("Você não deixou as notificações ativas");
 
             return;
@@ -85,12 +93,14 @@ export default function Monitor({ navigation }) {
         try {
             // const result = await storage().ref
             // const patroleStorage = await storage('gs://mall-security-robot-e52f0.appspot.com');
-            const reference = await storage().ref(`route_execution/${imageName}`).getDownloadURL();
-            setImageUrl(reference)
+            const reference = await storage()
+                .ref(`route_execution/${imageName}`)
+                .getDownloadURL();
+            setImageUrl(reference);
             // reference
             // const result = await storage().ref('janela').listAll();
-            console.log("aqui")
-            console.log(reference)
+            console.log("aqui");
+            console.log(reference);
             // const urls = await Promise.all(
             //   result.items.map(async (item) => {
             //     return {
@@ -99,33 +109,27 @@ export default function Monitor({ navigation }) {
             //     };
             //   })
             // );
-            
-          } catch (error) {
-            console.error('Error listing images:', error);
-          }
-        };
+        } catch (error) {
+            console.error("Error listing images:", error);
+        }
+    };
 
-        
-        // console.log(firebase.database());
+    // console.log(firebase.database());
 
-        // const token = await Notifications.getExpoPushTokenAsync({
-        //     projectId: Constants.expoConfig.extra.eas.projectId,
-        //   });
-        // console.log(token)
+    // const token = await Notifications.getExpoPushTokenAsync({
+    //     projectId: Constants.expoConfig.extra.eas.projectId,
+    //   });
+    // console.log(token)
 
-        // await Notifications.scheduleNotificationAsync({
-        //     content: {
-        //         title: "Person Detected",
-        //         body: "A person has been detected by patrole. Check the app to see more information."
-        //     },
-        //     trigger: {
-        //         seconds: 5
-        //     }
-        // });
-
-        
-    
-
+    // await Notifications.scheduleNotificationAsync({
+    //     content: {
+    //         title: "Person Detected",
+    //         body: "A person has been detected by patrole. Check the app to see more information."
+    //     },
+    //     trigger: {
+    //         seconds: 5
+    //     }
+    // });
 
     return (
         <SafeAreaView style={styles.container}>
@@ -134,7 +138,12 @@ export default function Monitor({ navigation }) {
             </View> */}
 
             <View style={styles.header}>
-                <SvgXml xml={logoImage} width="100" height="100" style={styles.headerImage} />
+                <SvgXml
+                    xml={logoImage}
+                    width="100"
+                    height="100"
+                    style={styles.headerImage}
+                />
             </View>
 
             <View style={styles.body}>
@@ -142,14 +151,23 @@ export default function Monitor({ navigation }) {
                     <Text style={styles.statusTitle}>Status of Route 1</Text>
                 </View>
                 <View style={styles.statusBox}>
-                    <Text style={isAlert ? styles.statusBoxTextWarning : styles.statusBoxText}>Person detected between 6th and 7th ArUCo Marker. Robot stopped.</Text>
+                    <Text
+                        style={
+                            isAlert
+                                ? styles.statusBoxTextWarning
+                                : styles.statusBoxText
+                        }
+                    >
+                        Person detected between 6th and 7th ArUCo Marker. Robot
+                        stopped.
+                    </Text>
                 </View>
-
-
 
                 <View>
                     <Text style={styles.descriptionContainer}>
-                        <Text style={styles.boldText}>Total of ArUCo Markers: </Text>
+                        <Text style={styles.boldText}>
+                            Total of ArUCo Markers:{" "}
+                        </Text>
                         <Text style={styles.normalText}>27</Text>
                     </Text>
                     <Text style={styles.descriptionContainer}>
@@ -157,18 +175,20 @@ export default function Monitor({ navigation }) {
                         <Text style={styles.normalText}>2</Text>
                     </Text>
                     <Text style={styles.descriptionContainer}>
-                        <Text style={styles.boldText}>Interval between routes: </Text>
+                        <Text style={styles.boldText}>
+                            Interval between routes:{" "}
+                        </Text>
                         <Text style={styles.normalText}>3</Text>
                     </Text>
                     <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>Number of patrols: </Text>
                         <Text style={styles.normalText}>4</Text>
                     </Text>
-                    {isAlert &&
-                    <View>
+                    {isAlert && (
+                        <View>
                             <View style={styles.imageContainer}>
                                 <Image
-                                    source={{uri:imageUrl}} // Adjust the path to your image
+                                    source={{ uri: imageUrl }} // Adjust the path to your image
                                     style={styles.image}
                                 />
                                 <Text>Image Captured by Patrole</Text>
@@ -176,25 +196,25 @@ export default function Monitor({ navigation }) {
 
                             <View style={styles.filler} />
 
-                            <TouchableOpacity 
+                            <TouchableOpacity
                                 onPress={handleCallNotifications}
                                 style={styles.buttonSecondary}
-                                >
-                                <Text style={styles.buttonTextSecondary}>Stop Alarm and Stop Route</Text>
+                            >
+                                <Text style={styles.buttonTextSecondary}>
+                                    Stop Alarm and Stop Route
+                                </Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity style={styles.buttonPrimary}>
-                                <Text style={styles.buttonTextPrimary}>Stop Alarm and Continue Route</Text>
+                                <Text style={styles.buttonTextPrimary}>
+                                    Stop Alarm and Continue Route
+                                </Text>
                             </TouchableOpacity>
-                            </View>
-                    }
-                    
+                        </View>
+                    )}
                 </View>
-
-
             </View>
 
-            
             {/* <View style={styles.title}>
                 <Text style={styles.routesTitle}>Your Routes</Text>
             </View>
@@ -202,57 +222,56 @@ export default function Monitor({ navigation }) {
             <View>
                 <Text style={styles.noRoutes}>You have no saved routes</Text>
             </View> */}
-
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
     filler: {
-        height:50
+        height: 50,
     },
     boldText: {
-        fontWeight: 'bold',
+        fontWeight: "bold",
     },
     normalText: {
-        fontWeight: 'normal',
+        fontWeight: "normal",
     },
     statusTitle: {
-        color: '#3286FF',         // Text color
-        fontSize: 16,             // Font size
-        fontFamily: 'SF Pro Display', // Font family
-        fontWeight: 'bold',       // Font weight (700)
-        letterSpacing: 0.35,      // Letter spacing
-        textTransform: 'uppercase', // Text transform (uppercase)
-        textAlign: 'center',  
-        marginBottom: 10
+        color: "#3286FF", // Text color
+        fontSize: 16, // Font size
+        fontFamily: "SF Pro Display", // Font family
+        fontWeight: "bold", // Font weight (700)
+        letterSpacing: 0.35, // Letter spacing
+        textTransform: "uppercase", // Text transform (uppercase)
+        textAlign: "center",
+        marginBottom: 10,
     },
     container: {
         flex: 1,
         backgroundColor: "white",
         alignItems: "center",
-        justifyContent: "center"
+        justifyContent: "center",
     },
     headerLogo: {
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
         padding: 4,
         paddingLeft: 10,
         paddingRight: 10,
         marginBottom: 10,
-        alignSelf: 'stretch',
+        alignSelf: "stretch",
     },
     header: {
         backgroundColor: "#0065F7",
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
         paddingTop: 30,
         paddingLeft: 10,
         paddingRight: 10,
         marginBottom: 10,
-        alignSelf: 'stretch',
+        alignSelf: "stretch",
     },
     headerImage: {
         width: 100, // Set the width of your image as needed
@@ -260,107 +279,102 @@ const styles = StyleSheet.create({
     },
     body: {
         flex: 1, // This makes the body take up the remaining space
-        width: '100%', // Ensure the body takes up the full width
+        width: "100%", // Ensure the body takes up the full width
         padding: 16, // Add padding as needed
     },
     statusBox: {
-        display: 'flex',
+        display: "flex",
         padding: 16,
         paddingLeft: 10,
         paddingRight: 10,
-        flexDirection: 'column',
-        alignItems: 'center',
-        alignSelf: 'stretch',
+        flexDirection: "column",
+        alignItems: "center",
+        alignSelf: "stretch",
         gap: 10,
 
         borderRadius: 8,
         borderWidth: 1,
-        borderColor: '#3286FF',
+        borderColor: "#3286FF",
 
-        marginBottom: 16
+        marginBottom: 16,
     },
-    statusBoxText:{
-
-        alignSelf: 'stretch',
+    statusBoxText: {
+        alignSelf: "stretch",
         // Typography
-        color: '#000',
-        textAlign: 'center',
-        fontFamily: 'SF Pro Text',
+        color: "#000",
+        textAlign: "center",
+        fontFamily: "SF Pro Text",
         fontSize: 24,
-        fontStyle: 'normal',
-        fontWeight: 'bold',
+        fontStyle: "normal",
+        fontWeight: "bold",
         lineHeight: 26, // You can use a number here for line height, or use relative values like '108.333%'
         letterSpacing: -0.408,
     },
-    statusBoxTextWarning:{
-
-        alignSelf: 'stretch',
+    statusBoxTextWarning: {
+        alignSelf: "stretch",
         // Typography
-        color: '#F00',
-        textAlign: 'center',
-        fontFamily: 'SF Pro Text',
+        color: "#F00",
+        textAlign: "center",
+        fontFamily: "SF Pro Text",
         fontSize: 24,
-        fontStyle: 'normal',
-        fontWeight: 'bold',
+        fontStyle: "normal",
+        fontWeight: "bold",
         lineHeight: 26, // You can use a number here for line height, or use relative values like '108.333%'
         letterSpacing: -0.408,
     },
 
     descriptionContainer: {
-        textAlign: 'center',
+        textAlign: "center",
         fontSize: 16,
     },
 
     buttonSecondary: {
-        display: 'flex',
+        display: "flex",
         padding: 12,
         paddingLeft: 24,
         paddingRight: 24,
-        flexDirection: 'column',
-        alignItems: 'center',
-        alignSelf: 'stretch',
-  
+        flexDirection: "column",
+        alignItems: "center",
+        alignSelf: "stretch",
 
         borderRadius: 12, // Border radius
         borderWidth: 1,
-        borderColor: '#FA0000', // Border color
-        
-        marginBottom:16,
+        borderColor: "#FA0000", // Border color
 
+        marginBottom: 16,
     },
-    buttonTextSecondary:{
-        color: '#FA0000',
-        textAlign: 'center',
-        fontFamily: 'SF Pro', // Replace with your desired font family
+    buttonTextSecondary: {
+        color: "#FA0000",
+        textAlign: "center",
+        fontFamily: "SF Pro", // Replace with your desired font family
         fontSize: 16,
-        fontStyle: 'normal',
-        fontWeight: '700',
+        fontStyle: "normal",
+        fontWeight: "700",
         lineHeight: 28,
         letterSpacing: 0.35,
     },
 
     buttonPrimary: {
-        display: 'flex',
+        display: "flex",
         padding: 12,
         paddingLeft: 24,
         paddingRight: 24,
-        flexDirection: 'column',
-        alignItems: 'center',
-        alignSelf: 'stretch',
-  
-        backgroundColor: '#FA0000',
+        flexDirection: "column",
+        alignItems: "center",
+        alignSelf: "stretch",
+
+        backgroundColor: "#FA0000",
         borderRadius: 12, // Border radius
         borderWidth: 1,
-        borderColor: '#FA0000', // Border color
-
+        borderColor: "#FA0000", // Border color
     },
-    buttonTextPrimary:{
-        color: 'white',
-        textAlign: 'center',
-        fontFamily: 'SF Pro', // Replace with your desired font family
+    buttonTextPrimary: {
+        color: "white",
+        textAlign: "center",
+        fontFamily: "SF Pro", // Replace with your desired font family
         fontSize: 16,
-        fontStyle: 'normal',
-        fontWeight: '700',
+        fontStyle: "normal",
+        fontWeight: "700",
         lineHeight: 28,
         letterSpacing: 0.35,
     },
@@ -388,19 +402,17 @@ const styles = StyleSheet.create({
     },
 
     imageContainer: {
-        display: 'flex',
+        display: "flex",
         padding: 16,
-        flexDirection: 'column',
-        alignItems: 'center',
-        alignSelf: 'stretch',
+        flexDirection: "column",
+        alignItems: "center",
+        alignSelf: "stretch",
         gap: 4,
-        
-        marginTop: 10
+
+        marginTop: 10,
     },
     image: {
         width: 300, // Set the width of the image
         height: 200, // Set the height of the image
-
-        
     },
 });

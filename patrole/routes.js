@@ -72,6 +72,34 @@ app.get("/disconnect", function (req, res) {
     });
 });
 
+app.get("/notification/:id", function (req, res) {
+    client.query(
+        `SELECT * FROM notification WHERE id_route_execution = ${req.params.id}`,
+        async function (err, result) {
+            if (err) {
+                return console.error("error running query", err);
+            }
+            res.send(result.rows);
+
+            return;
+        }
+    );
+});
+
+app.get("/camera_triggering/:id", function (req, res) {
+    client.query(
+        `SELECT * FROM camera_triggering WHERE id_camera_triggering = ${req.params.id}`,
+        async function (err, result) {
+            if (err) {
+                return console.error("error running query", err);
+            }
+            res.send(result.rows);
+
+            return;
+        }
+    );
+});
+
 app.listen(3001, "0.0.0.0", () => {
     console.log("Vai no navegador e entra em http://192.168.0.13:3001/");
 });
