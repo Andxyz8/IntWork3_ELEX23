@@ -22,6 +22,8 @@ import firestore from "@react-native-firebase/firestore";
 import storage from "@react-native-firebase/storage";
 import raspberryAPI from "../../services/raspberryAPI";
 
+import BackgroundTimer from 'react-native-background-timer';
+
 const firebaseConfig = {
     apiKey: "AIzaSyCQWGj9ce_s0D_Z--GMk3Zv0Ko1DZLRgxc",
     authDomain: "mall-security-robot-e52f0.firebaseapp.com",
@@ -34,7 +36,7 @@ const firebaseConfig = {
 };
 
 export default function Monitor({ route, navigation }) {
-    const { getNotifications } = raspberryAPI();
+    const { getNotifications, getImage } = raspberryAPI();
 
     const logoImage = `
         <?xml version="1.0" encoding="utf-8"?>
@@ -52,90 +54,142 @@ export default function Monitor({ route, navigation }) {
         ? styles.statusBoxTextWarning
         : styles.statusBoxText;
 
-    const [isAlert, setIsAlert] = useState(true);
+    const [isAlert, setIsAlert] = useState(false);
     const [imageUrl, setImageUrl] = useState(
         "https://i.pinimg.com/736x/43/ca/f7/43caf7050017bdae87b1a87551b00961.jpg"
     );
     const [imageName, setImageName] = useState("images");
+    const [notificationIds, setNotificationIds] = useState([])
+    const [statusMessage, setStatusMessage] = useState("Robot between 1 and 2 Aruco Marker")
+    const [lastAruco, setLastAruco] = useState(1)
+    const id_route = route.params.id_route
 
     useEffect(() => {
-        //TODO pooling every 30 seconds to notificaiton
-        //TODO save notification id when resolved
+
+        const handleNotifications = async (title: string) => {
+            const { status } = await Notifications.getPermissionsAsync();
+    
+            if (status !== "granted") {
+                Alert.alert("Você não deixou as notificações ativas");
+    
+                return;
+            }
+    
+            await Notifications.scheduleNotificationAsync({
+                content: {
+                    title: title,
+                    body: "Please open the app to see more about the information."
+                },
+                trigger: {
+                    seconds: 1
+                }
+            });
+        };
+
+        const yourFunction = async () => {
+            
+            if(isAlert == true) return;
+         
+            try {
+                const res = await getNotifications(id_route);
+
+
+                for (var notification of res) {
+                    const newId = notificationIds.find(id => id == notification.id_notification);
+
+                    if (newId) { return; }
+
+                    var aux = notificationIds
+                    setNotificationIds(aux);
+
+                    if(notification.message == "person_detection"){
+                        await handleNotifications("Patrole detected a person!");
+                        setStatusMessage(`Person detected between ${lastAruco} and ${lastAruco+1} ArUCo Marker.`)
+                        setIsAlert(true)
+
+                        const images = await getImage(notification.value)
+                        if(images){
+                            const img = images[images.length - 1]
+                            const url = img.image_url
+
+                            if(url){
+                                setImageUrl(url)
+                            } else {
+                                setImageUrl('https://imageio.forbes.com/specials-images/imageserve/5ed68e8310716f0007411996/A-black-screen--like-the-one-that-overtook-the-internet-on-the-morning-of-June-2-/960x0.jpg?format=jpg&width=960')
+                            }
+                        }
+
+                    } else if (notification.message == "movement_detection"){
+                        await handleNotifications("Patrole detected movement!");
+                        setStatusMessage(`Movement detected between ${lastAruco} and ${lastAruco+1} ArUCo Marker.`)
+                        setIsAlert(true)
+
+                        const images = await getImage(notification.value)
+                        if(images){
+                            const img = images[images.length - 1]
+                            const url = img.image_url
+
+                            if(url){
+                                setImageUrl(url)
+                            } else {
+                                setImageUrl('https://imageio.forbes.com/specials-images/imageserve/5ed68e8310716f0007411996/A-black-screen--like-the-one-that-overtook-the-internet-on-the-morning-of-June-2-/960x0.jpg?format=jpg&width=960')
+                            }
+                        }
+                    } else if (notification.message == "aruco_read"){
+                        const numberAruco = Number(notification.value)
+                        setLastAruco(numberAruco)
+                    } else if (notification.message == "route_execution_status"){
+                        if(notification.value){
+                            setStatusMessage("Finalized Route")
+                        }
+                    }
+                    
+                    
+                    
+                }
+                // setFlag(!flag);
+            } catch (error) {
+                console.error('Error fetching notifications:', error);
+            }
+        };
+      
+        const intervalId = BackgroundTimer.setInterval(() => {
+            yourFunction();
+            
+        }, 5*1000);
+      
+        return () => {
+          BackgroundTimer.clearInterval(intervalId);
+        };
+      }, [id_route, isAlert]);
+
+    // TODO save notification id when resolved
+
+    useEffect(() => {
 
         const initializeFirebase = async () => {
             if (!firebase.apps.length) {
                 const firebaseApp = await firebase.initializeApp(
                     firebaseConfig
                 );
-                console.log("Firebase Initialized");
-                console.log(firebaseApp.name);
-                console.log(firebaseApp.options);
             } else {
                 const firebaseApp = firebase.app();
-                console.log("Firebase App already initialized");
-                console.log(firebaseApp.name);
-                console.log(firebaseApp.options);
             }
         };
 
         initializeFirebase();
     }, []);
 
-    const handleCallNotifications = async () => {
-        const { status } = await Notifications.getPermissionsAsync();
-
-        if (status !== "granted") {
-            Alert.alert("Você não deixou as notificações ativas");
-
-            return;
-        }
-
-        try {
-            // const result = await storage().ref
-            // const patroleStorage = await storage('gs://mall-security-robot-e52f0.appspot.com');
-            const reference = await storage()
-                .ref(`route_execution/${imageName}`)
-                .getDownloadURL();
-            setImageUrl(reference);
-            // reference
-            // const result = await storage().ref('janela').listAll();
-            console.log("aqui");
-            console.log(reference);
-            // const urls = await Promise.all(
-            //   result.items.map(async (item) => {
-            //     return {
-            //       name: item.name,
-            //       url: await item.getDownloadURL(),
-            //     };
-            //   })
-            // );
-        } catch (error) {
-            console.error("Error listing images:", error);
-        }
+    const continueRoute = async () => {
+        setIsAlert(false)
     };
 
-    // console.log(firebase.database());
-
-    // const token = await Notifications.getExpoPushTokenAsync({
-    //     projectId: Constants.expoConfig.extra.eas.projectId,
-    //   });
-    // console.log(token)
-
-    // await Notifications.scheduleNotificationAsync({
-    //     content: {
-    //         title: "Person Detected",
-    //         body: "A person has been detected by patrole. Check the app to see more information."
-    //     },
-    //     trigger: {
-    //         seconds: 5
-    //     }
-    // });
+    const stopRoute = async () => {
+        setIsAlert(true)
+    };
 
     return (
         <SafeAreaView style={styles.container}>
-            {/* <View style={styles.header}>
-                <Text style={styles.headerTxt}>PATROLE</Text>
-            </View> */}
 
             <View style={styles.header}>
                 <SvgXml
@@ -158,8 +212,7 @@ export default function Monitor({ route, navigation }) {
                                 : styles.statusBoxText
                         }
                     >
-                        Person detected between 6th and 7th ArUCo Marker. Robot
-                        stopped.
+                        {statusMessage}
                     </Text>
                 </View>
 
@@ -197,7 +250,7 @@ export default function Monitor({ route, navigation }) {
                             <View style={styles.filler} />
 
                             <TouchableOpacity
-                                onPress={handleCallNotifications}
+                                onPress={stopRoute}
                                 style={styles.buttonSecondary}
                             >
                                 <Text style={styles.buttonTextSecondary}>
@@ -205,7 +258,7 @@ export default function Monitor({ route, navigation }) {
                                 </Text>
                             </TouchableOpacity>
 
-                            <TouchableOpacity style={styles.buttonPrimary}>
+                            <TouchableOpacity onPress={continueRoute} style={styles.buttonPrimary}>
                                 <Text style={styles.buttonTextPrimary}>
                                     Stop Alarm and Continue Route
                                 </Text>

@@ -12,6 +12,7 @@ interface Api {
     getRoutes(): Promise<Route[]>;
     startRouteExct(address: string, id_route: any): Promise<boolean>;
     getNotifications(id: string): Promise<Notification[]>;
+    getImage(id: string): Promise<CameraTriggering[]>;
 }
 
 interface Route {
@@ -32,8 +33,16 @@ interface Notification {
     moment: Date;
 }
 
+interface CameraTriggering {
+    id_route_execution: number;
+    reason: string;
+    image_url: string;
+    moment: Date;
+}
+
+
 //mudar para ip local
-const server = "http://192.168.0.13:3001";
+const server = "http://192.168.15.182:3001";
 
 function raspberryAPI(): Api {
     const getConnection = async () => {
@@ -44,10 +53,11 @@ function raspberryAPI(): Api {
 
             let ipString = ip[0] + "." + ip[1] + "." + ip[2];
 
-            for (let i = 13; i <= 15; i++) {
+            for (let i = 0; i <= 190; i++) {
                 address = `http://${ipString}.${i}:5002/command`;
-
+                console.log(address)
                 try {
+                    console.log("trying1")
                     const response = await fetch(address, {
                         method: "GET",
                         headers: {
@@ -235,6 +245,28 @@ function raspberryAPI(): Api {
         });
     };
 
+    const getImage = async (id: string) => {
+        
+        let images: CameraTriggering[] = [];
+        return connect().then(async (res) => {
+            if (res) {
+                const response = await fetch(server + `/camera_triggering/${id}`, {
+                    method: "get",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Accept: "application/json",
+                    },
+                });
+
+                const result = await response.json();
+
+                images = result;
+
+                return images;
+            }
+        });
+    };
+
     return {
         getConnection,
         sendCommandFoward,
@@ -246,6 +278,7 @@ function raspberryAPI(): Api {
         getRoutes,
         startRouteExct,
         getNotifications,
+        getImage
     };
 }
 

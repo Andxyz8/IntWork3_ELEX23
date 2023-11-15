@@ -57,7 +57,7 @@ export default function RouteList({ route, navigation }) {
         startRouteExct(address, id_route).then((res) => {
             setRoutes([]);
             setFlag(!flag);
-            if (res) navigation.navigate("Monitor", route.params);
+            if (res) navigation.navigate("Monitor", { address: route.params, id_route: id_route });
         });
     }
     return (
