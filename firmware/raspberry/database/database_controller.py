@@ -203,6 +203,25 @@ class DatabaseController:
         )
         return True
 
+    def insert_route_execution_face_detection(
+        self,
+        id_route_execution: int,
+        image_unique_id: str,
+        step_sequence: str
+    ) -> bool:
+        firebase_image_url = self.__upload_image_to_cloud_storage(image_unique_id)
+        triggering_reason = "Face Detection"
+        self.__insert_camera_triggering(
+            id_route_execution = id_route_execution,
+            reason = triggering_reason,
+            image_url = firebase_image_url
+        )
+        self.__insert_alarm_triggering(
+            id_route_execution = id_route_execution,
+            reason = triggering_reason
+        )
+        return True
+
     def update_route_execution_ending(self, unique_id: int) -> bool:
         """Update the ending of a route.
 

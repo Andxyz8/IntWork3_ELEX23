@@ -26,8 +26,34 @@ class RouteExecutionMediator:
 
     def __notify_route_execution_status(self, state: str) -> bool:
         flag_success = self.__ctrl_notification.inform_route_execution_status(
-            id_route_execution = self.__id_route_execution,
             value = state
+        )
+
+        return flag_success
+
+    def __notify_route_execution_movement_detection(
+        self,
+        id_camera_triggering: int
+    ) -> bool:
+        flag_success = self.__ctrl_notification.inform_route_execution_movement_detection(
+            id_camera_triggering
+        )
+
+        return flag_success
+
+    def __notify_route_execution_face_detection(
+        self,
+        id_camera_triggering: int
+    ) -> bool:
+        flag_success = self.__ctrl_notification.inform_route_execution_face_detection(
+            id_camera_triggering
+        )
+
+        return flag_success
+
+    def __notify_route_execution_aruco_read(self, id_aruco: int) -> bool:
+        flag_success = self.__ctrl_notification.inform_route_execution_aruco_read(
+            aruco_id = id_aruco
         )
 
         return flag_success
@@ -45,16 +71,25 @@ class RouteExecutionMediator:
 
         return route_steps
 
-    def __movement_detection_routine(self) -> bool:
-        flag_detected = self.__ctrl_camera.movement_detection_routine()
-        return flag_detected
+    def __movement_face_detection_routine(self) -> bool:
+        result_detection = self.__ctrl_camera.movement_face_detection_routine()
+        return result_detection
 
-    def __insert_route_execution_movement_detection(self, step_sequence: int) -> None:
-        self.__ctrl_database.insert_route_execution_movement_detection(
+    def __insert_route_execution_movement_detection(self, step_sequence: int) -> int:
+        id_camera_triggering = self.__ctrl_database.insert_route_execution_movement_detection(
             self.__id_route_execution,
             self.__ctrl_camera.last_image_unique_id,
             step_sequence
         )
+        return id_camera_triggering
+
+    def __insert_route_execution_face_detection(self, step_sequence: int) -> None:
+        id_camera_triggering = self.__ctrl_database.insert_route_execution_face_detection(
+            self.__id_route_execution,
+            self.__ctrl_camera.last_image_unique_id,
+            step_sequence
+        )
+        return id_camera_triggering
 
     def __update_moment_end_route_execution(self) -> None:
         self.__ctrl_database.update_route_execution_ending(
@@ -74,7 +109,9 @@ class RouteExecutionMediator:
         df_route_steps = self.__get_route_steps()
 
         print(df_route_steps)
-
+        self.__ctrl_notification.initializa_notification_controller(
+            id_route_exec = self.__id_route_execution
+        )
         self.__notify_route_execution_status("Executing")
 
         for step_index, route_step in df_route_steps.iterrows():
@@ -91,11 +128,32 @@ class RouteExecutionMediator:
             print(f"MOVEU {route_step['step_sequence']}")
 
             # TODO: improve this condition, too dummy
-            if step_index % 4 == 0:
-                flag_detected = self.__movement_detection_routine()
-                if flag_detected:
-                    self.__insert_route_execution_movement_detection(
+            if step_index % 8 == 0:
+                result_detection = self.__movement_face_detection_routine()
+                if result_detection == 'movement detection':
+                    id_camera_triggering = self.__insert_route_execution_movement_detection(
                         route_step['step_sequence']
                     )
+                    self.__notify_route_execution_movement_detection(id_camera_triggering)
+                    self.__ctrl_esp_communication.turn_on_buzzer()
+
+                if result_detection == 'face detection':
+                    id_camera_triggering = self.__insert_route_execution_face_detection(
+                        route_step['step_sequence']
+                    )
+                    self.__notify_route_execution_face_detection(id_camera_triggering)
+                    self.__ctrl_esp_communication.turn_on_buzzer()
+                    # TODO: implement the logic to understand user command to stop buzzer
+
+            if (route_step['right_pwm_intensity'] == 0
+                and route_step['left_pwm_intensity'] == 0
+            ):
+                id_aruco = self.__ctrl_camera.read_aruco_marker_routine()
+                # TODO: implement the logic to stop the robot if aruco marker not found
+                self.__notify_route_execution_aruco_read(
+                    id_aruco
+                )
+                # TODO: implement the logic to turn the robot to the correct direction
+
         self.__end()
         return True

@@ -25,7 +25,7 @@ class AppCommunicationHandler(FlaskView):
         return {'found': True}
 
     @route("/route_recording_mode", methods = ['GET', 'POST'])
-    def put_route_recording_mode(self):
+    def post_route_recording_mode(self):
         """Instantiate the route recording mode on the Raspberry Pi.
 
         Headers:
@@ -57,6 +57,12 @@ class AppCommunicationHandler(FlaskView):
         execution_succed = obj_patrole.route_recording.rotate_right()
 
         return {"status": 200, "value": execution_succed}
+
+    @route("/recording_read_aruco", methods = ['GET', 'POST'])
+    def post_recording_read_aruco(self):
+        id_aruco = obj_patrole.route_recording.read_aruco_marker()
+
+        return {"status": 200, "aruco": id_aruco}
 
     @route("/end_route_recording_mode", methods = ['GET', 'POST'])
     def post_end_route_recording(self):

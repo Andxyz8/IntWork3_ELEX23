@@ -1,5 +1,4 @@
 from database.database_controller import DatabaseController
-from utils.datetime_operator import get_str_datetime_agora
 
 
 class NotificationController:
@@ -14,14 +13,52 @@ class NotificationController:
 
     def inform_route_execution_status(
         self,
-        id_route_execution: int,
         value: str
     ) -> bool:
         message = "route_execution_status"
 
         self.__ctrl_database.insert_notification(
-            id_route_execution,
+            self.__id_route_execution,
             message,
             value
+        )
+        return True
+
+    def inform_route_execution_aruco_read(
+        self,
+        aruco_id: int
+    ) -> bool:
+        message = "aruco_read"
+
+        self.__ctrl_database.insert_notification(
+            self.__id_route_execution,
+            message,
+            f"{aruco_id}"
+        )
+        return True
+
+    def inform_route_execution_movement_detection(
+        self,
+        id_camera_triggering: int
+    ) -> bool:
+        message = "movement_detection"
+
+        self.__ctrl_database.insert_notification(
+            self.__id_route_execution,
+            message,
+            f"{id_camera_triggering}"
+        )
+        return True
+
+    def inform_route_execution_face_detection(
+        self,
+        id_camera_triggering: int
+    ) -> bool:
+        message = "person_detection"
+
+        self.__ctrl_database.insert_notification(
+            self.__id_route_execution,
+            message,
+            f"{id_camera_triggering}"
         )
         return True

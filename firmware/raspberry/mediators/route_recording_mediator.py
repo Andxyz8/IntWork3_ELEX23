@@ -96,7 +96,7 @@ class RouteRecordingMediator:
         self.__add_route_step('RR')
         return self.__ctrl_esp.rotate_right()
 
-    def read_aruco_marker(self) -> bool:
+    def read_aruco_marker(self) -> int:
         self.__add_route_step('RA')
         return self.__ctrl_camera.read_aruco_marker_routine(
             self.__ctrl_esp
