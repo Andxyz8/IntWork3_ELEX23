@@ -20,20 +20,53 @@ class RouteRecordingMediator:
     def __add_route_step(
         self,
         step_type: str,
-        pwm_intensity_left: float = 30,
-        pwm_intensity_right: float = 30
+        pwm_intensity_left: float = 48,
+        pwm_intensity_right: float = 50
     ) -> None:
-        number_steps = len(self.__route_steps) + 1
+        step_number = len(self.__route_steps) + 1
         step = {}
         if step_type == 'MF':
             step = {
-                'step_sequence': f'{number_steps}/',
+                'step_sequence': f'{step_number}/',
                 'start_aruco_marker': 1,
                 'next_aruco_marker': 2,
                 'number_rotations_left_encoder': 3,
                 'number_rotations_right_encoder': 3,
                 'left_pwm_intensity': pwm_intensity_left,
                 'right_pwm_intensity': pwm_intensity_right,
+                'compass_module_degrees': 0
+            }
+        if step_type == 'RL':
+            step = {
+                'step_sequence': f'{step_number}/',
+                'start_aruco_marker': 1,
+                'next_aruco_marker': 2,
+                'number_rotations_left_encoder': 4,
+                'number_rotations_right_encoder': 2,
+                'left_pwm_intensity': 0,
+                'right_pwm_intensity': 48,
+                'compass_module_degrees': 0
+            }
+        if step_type == 'RR':
+            step = {
+                'step_sequence': f'{step_number}/',
+                'start_aruco_marker': 1,
+                'next_aruco_marker': 2,
+                'number_rotations_left_encoder': 2,
+                'number_rotations_right_encoder': 4,
+                'left_pwm_intensity': 48,
+                'right_pwm_intensity': 0,
+                'compass_module_degrees': 0
+            }
+        if step_type == 'RA':
+            step = {
+                'step_sequence': f'{step_number}/',
+                'start_aruco_marker': 1,
+                'next_aruco_marker': 2,
+                'number_rotations_left_encoder': 0,
+                'number_rotations_right_encoder': 0,
+                'left_pwm_intensity': 0,
+                'right_pwm_intensity': 0,
                 'compass_module_degrees': 0
             }
 
@@ -54,6 +87,20 @@ class RouteRecordingMediator:
     def move_forward(self) -> bool:
         self.__add_route_step('MF')
         return self.__ctrl_esp.move_forward()
+
+    def rotate_left(self) -> bool:
+        self.__add_route_step('RL')
+        return self.__ctrl_esp.rotate_left()
+
+    def rotate_right(self) -> bool:
+        self.__add_route_step('RR')
+        return self.__ctrl_esp.rotate_right()
+
+    def read_aruco_marker(self) -> bool:
+        self.__add_route_step('RA')
+        return self.__ctrl_camera.read_aruco_marker_routine(
+            self.__ctrl_esp
+        )
 
     def move_forward_fine(
         self,
