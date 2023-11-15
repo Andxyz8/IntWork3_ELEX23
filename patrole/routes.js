@@ -14,6 +14,12 @@ const client = new Client({
 
 const app = express();
 
+app.get("/", function (req, res) {
+    console.log("OI");
+    res.send("NOTHING TO SEE HERE");
+    return;
+});
+
 // Criando uma rota GET que retorna os dados da tabela usuários.
 app.get("/users", function (req, res) {
     client.query("SELECT * FROM user_patrole", async function (err, result) {
@@ -101,5 +107,5 @@ app.get("/camera_triggering/:id", function (req, res) {
 });
 
 app.listen(3001, "0.0.0.0", () => {
-    console.log("Vai no navegador e entra em http://192.168.0.13:3001/");
+    console.log("Vai no navegador e entra em http://107.20.130.209:3001/");
 });

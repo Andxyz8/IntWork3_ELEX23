@@ -33,6 +33,8 @@ interface Notification {
     moment: Date;
 }
 
+//AWS server ip
+const server = "http://107.20.130.209:3001";
 interface CameraTriggering {
     id_route_execution: number;
     reason: string;
@@ -53,7 +55,7 @@ function raspberryAPI(): Api {
 
             let ipString = ip[0] + "." + ip[1] + "." + ip[2];
 
-            for (let i = 0; i <= 190; i++) {
+            for (let i = 1; i <= 254; i++) {
                 address = `http://${ipString}.${i}:5002/command`;
                 console.log(address)
                 try {
