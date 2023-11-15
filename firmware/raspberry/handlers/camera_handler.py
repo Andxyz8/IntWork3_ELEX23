@@ -29,14 +29,11 @@ from cv2 import (
     CHAIN_APPROX_SIMPLE,
     FONT_HERSHEY_SIMPLEX
 )
-from RPi import GPIO
+from handlers.esp_communication import ESPCommunicationHandler
 
 class CameraHandler:
 
     def __init__(self) -> None:
-        self.__pwm_gpio: int = 12
-        self.__pwm_frequence: int = 50
-        self.__pwm_servo = None
         self.__last_image_unique_id: str = ""
 
     @property
@@ -44,65 +41,6 @@ class CameraHandler:
         """Return the last image unique id.
         """
         return self.__last_image_unique_id
-
-    def __install_camera_servo(self) -> None:
-        # Use Board numerotation mode
-        GPIO.setmode(GPIO.BOARD)
-
-        # Disable warnings
-        GPIO.setwarnings(False)
-
-        GPIO.setup(self.__pwm_gpio, GPIO.OUT)
-        self.__pwm_servo = GPIO.PWM(self.__pwm_gpio, self.__pwm_frequence)
-
-    def __uninstall_camera_servo(self) -> None:
-        self.__pwm_servo.stop()
-        GPIO.cleanup()
-
-    #Set function to calculate percent from angle
-    def __angle_to_percent (self, angle) :
-        if angle > 180 or angle < 0 :
-            return False
-
-        start = 4
-        end = 12.5
-
-        # Calculate ratio from angle to percent
-        ratio = (end - start)/180
-
-        angle_as_percent = angle * ratio
-
-        return start + angle_as_percent
-
-    def __move_servo_from_center_to_right(self) -> bool:
-        """Move the camera to the right side.
-        """
-        self.__pwm_servo.start(self.__angle_to_percent(90))
-        time_sleep(2)
-        self.__pwm_servo.start(self.__angle_to_percent(0))
-        time_sleep(2)
-        return True
-
-    def __move_servo_from_right_to_center(self) -> bool:
-        """Move the camera to the front side.
-        """
-        self.__pwm_servo.ChangeDutyCycle(self.__angle_to_percent(90))
-        time_sleep(2)
-        return True
-
-    def __move_servo_from_center_to_left(self) -> bool:
-        """Move the camera to the left side.
-        """
-        self.__pwm_servo.ChangeDutyCycle(self.__angle_to_percent(180))
-        time_sleep(2)
-        return True
-
-    def __move_servo_from_left_to_center(self) -> bool:
-        """Move the camera to the initial position, centralized.
-        """
-        self.__pwm_servo.ChangeDutyCycle(self.__angle_to_percent(90))
-        time_sleep(2)
-        return True
 
     def __save_image_locally(self, image_to_save) -> None:
         """Save the image locally.
@@ -184,32 +122,51 @@ class CameraHandler:
         # destroyAllWindows()
         return movement_detected
 
-    def movement_detection_routine(self):
-        # TODO: review this part (time_sleep) not working very well
-        self.__install_camera_servo()
+    def __detect_face(self, duration: int) -> bool:
+        # TODO: integrate with face detection
+        pass
 
-        self.__move_servo_from_center_to_right()
+    def __detect_aruco_marker(self, duration: int) -> bool:
+        # TODO: integrate with aruco marker detection
+        pass
+
+    def movement_detection_routine(self, ctrl_esp: ESPCommunicationHandler) -> bool:
+        # TODO: review this part (time_sleep) not working very well
+        ctrl_esp.center_camera_servo()
 
         movement_detected = self.__detect_movement(5)
 
         if movement_detected:
-            self.__uninstall_camera_servo()
             return movement_detected
 
-        self.__move_servo_from_right_to_center()
+        ctrl_esp.rotate_camera_servo_right()
         self.__detect_movement(5)
         if movement_detected:
-            self.__uninstall_camera_servo()
             return movement_detected
 
-        self.__move_servo_from_center_to_left()
+        ctrl_esp.rotate_camera_servo_left()
         self.__detect_movement(5)
         if movement_detected:
-            self.__uninstall_camera_servo()
             return movement_detected
 
-        self.__move_servo_from_left_to_center()
-        self.__uninstall_camera_servo()
+        ctrl_esp.center_camera_servo()
         return False
+
+    def read_aruco_marker_routine(self, ctrl_esp: ESPCommunicationHandler) -> int:
+        """Read the aruco marker and return the id of the marker.
+
+        Args:
+            ctrl_esp (ESPCommunicationHandler): instance to handle the communication
+                with the ESP.
+
+        Returns:
+            int: id of the aruco marker.
+        """
+        ctrl_esp.center_camera_servo()
+
+        ctrl_esp.rotate_camera_servo_right()
+
+        # TODO: integrate this part with the read aruco marker function
+        return 0
 
 # pylint: enable = E1101:no-member, E0611:no-name-in-module, E0401:import-error

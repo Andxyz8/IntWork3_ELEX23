@@ -20,6 +20,9 @@ class ESPCommunicationHandler:
             'MOVE_BACKWARD': 'cmb', # implemented on esp
             'ROTATE_LEFT': 'crl', # implemented on esp
             'ROTATE_RIGHT': 'crr', # implemented on esp
+            'PLACE_CAMERA_SERVO_CENTER': 'csm', # implemented on esp
+            'TURN_CAMERA_SERVO_RIGHT': 'csf', # implemented on esp
+            'TURN_CAMERA_SERVO_LEFT': 'csz' # implemented on esp
         }
 
     def __read_data_from_esp32(self, size_to_read: int) -> list[int]:
@@ -287,6 +290,36 @@ class ESPCommunicationHandler:
         data = self.__read_str_from_data_from_esp32()
 
         print(f"PWM MOTOR STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+
+    def center_camera_servo(self) -> bool:
+        self.__send_command_to_esp32('PLACE_CAMERA_SERVO_CENTER')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"SERVO STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+
+    def rotate_camera_servo_right(self) -> bool:
+        self.__send_command_to_esp32('TURN_CAMERA_SERVO_RIGHT')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"SERVO STATUS: {data}")
+
+        if 'OK' in data:
+            return True
+        return False
+
+    def rotate_camera_servo_left(self) -> bool:
+        self.__send_command_to_esp32('TURN_CAMERA_SERVO_LEFT')
+        data = self.__read_str_from_data_from_esp32()
+
+        print(f"SERVO STATUS: {data}")
 
         if 'OK' in data:
             return True
