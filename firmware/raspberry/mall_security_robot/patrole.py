@@ -6,7 +6,8 @@ from database.notification_controller import NotificationController
 from handlers.esp_communication import ESPCommunicationHandler
 from handlers.camera_handler import CameraHandler
 
-class Patrole():
+
+class Patrole:
 
     def __init__(self):
         self.__ctrl_notification: NotificationController = None
@@ -16,7 +17,6 @@ class Patrole():
         self.initial_state: InitialStateMediator = None
         self.route_recording: RouteRecordingMediator = None
         self.route_execution: RouteExecutionMediator = None
-        self.__flag_i2c_working: bool = False
 
     def __initialize_initial_mediator(self) -> bool:
         self.__ctrl_esp_communication = ESPCommunicationHandler()

@@ -79,9 +79,12 @@ class DatabaseController:
                 TIMESTAMP '{get_str_datetime_agora()}'
             );
         """
-        self.__cloud_database.execute_insert(query_insert)
+        id_camera_triggering = self.__cloud_database.execute_insert(
+            query_insert,
+            return_id = True
+        )
 
-        return True
+        return id_camera_triggering
 
     def __insert_alarm_triggering(self, id_route_execution: int, reason: str) -> bool:
         """Inserts a alarm triggering at the cloud database."""
@@ -96,9 +99,12 @@ class DatabaseController:
                 TIMESTAMP '{get_str_datetime_agora()}'
             );
         """
-        self.__cloud_database.execute_insert(query_insert)
+        id_camera_triggering = self.__cloud_database.execute_insert(
+            query_insert,
+            return_id = True
+        )
 
-        return True
+        return id_camera_triggering
 
     def insert_route_recording_start(self) -> int:
         query_insert = f"""
@@ -128,7 +134,7 @@ class DatabaseController:
             UPDATE route SET
                 title = '{title}',
                 description = '{description}',
-                n_repeats = {n_repeats},
+                number_repeats = {n_repeats},
                 interval_between_repeats = {interval_between_repeats}
             WHERE id_route = {id_route};
         """
@@ -192,16 +198,17 @@ class DatabaseController:
     ) -> bool:
         firebase_image_url = self.__upload_image_to_cloud_storage(image_unique_id)
         triggering_reason = "Movement Detection"
-        self.__insert_camera_triggering(
+
+        id_camera_triggering = self.__insert_camera_triggering(
             id_route_execution = id_route_execution,
             reason = triggering_reason,
             image_url = firebase_image_url
         )
-        self.__insert_alarm_triggering(
+        id_alarm_triggering = self.__insert_alarm_triggering(
             id_route_execution = id_route_execution,
             reason = triggering_reason
         )
-        return True
+        return id_camera_triggering
 
     def insert_route_execution_face_detection(
         self,
@@ -211,16 +218,17 @@ class DatabaseController:
     ) -> bool:
         firebase_image_url = self.__upload_image_to_cloud_storage(image_unique_id)
         triggering_reason = "Face Detection"
-        self.__insert_camera_triggering(
+
+        id_camera_triggering = self.__insert_camera_triggering(
             id_route_execution = id_route_execution,
             reason = triggering_reason,
             image_url = firebase_image_url
         )
-        self.__insert_alarm_triggering(
+        id_alarm_triggering = self.__insert_alarm_triggering(
             id_route_execution = id_route_execution,
             reason = triggering_reason
         )
-        return True
+        return id_camera_triggering
 
     def update_route_execution_ending(self, unique_id: int) -> bool:
         """Update the ending of a route.

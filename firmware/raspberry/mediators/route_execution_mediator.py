@@ -1,3 +1,4 @@
+from time import sleep as time_sleep
 from pandas import DataFrame
 from database.database_controller import DatabaseController
 from database.notification_controller import NotificationController
@@ -72,7 +73,9 @@ class RouteExecutionMediator:
         return route_steps
 
     def __movement_face_detection_routine(self) -> bool:
-        result_detection = self.__ctrl_camera.movement_face_detection_routine()
+        result_detection = self.__ctrl_camera.movement_face_detection_routine(
+            self.__ctrl_esp_communication
+        )
         return result_detection
 
     def __insert_route_execution_movement_detection(self, step_sequence: int) -> int:
@@ -115,40 +118,71 @@ class RouteExecutionMediator:
         self.__notify_route_execution_status("Executing")
 
         for step_index, route_step in df_route_steps.iterrows():
+            step_sequence = step_index + 1
             if (route_step['right_pwm_intensity'] > 0
                 and route_step['left_pwm_intensity'] > 0
             ):
+                time_sleep(0.5)
                 flag_success = self.__ctrl_esp_communication.move_forward()
-                if flag_success:
-                    continue
                 while not flag_success:
+                    time_sleep(0.5)
                     flag_success = self.__ctrl_esp_communication.move_forward()
-                    if flag_success:
-                        continue
-            print(f"MOVEU {route_step['step_sequence']}")
 
+            if (route_step['right_pwm_intensity'] > 0
+                and route_step['left_pwm_intensity'] == 0
+            ):
+                time_sleep(0.5)
+                flag_success = self.__ctrl_esp_communication.rotate_left()
+                while not flag_success:
+                    time_sleep(0.5)
+                    flag_success = self.__ctrl_esp_communication.rotate_left()
+
+            if (route_step['right_pwm_intensity'] == 0
+                and route_step['left_pwm_intensity'] > 0
+            ):
+                time_sleep(0.5)
+                flag_success = self.__ctrl_esp_communication.rotate_right()
+                while not flag_success:
+                    time_sleep(0.5)
+                    flag_success = self.__ctrl_esp_communication.rotate_right()
+
+            print(f"MOVEU {route_step['step_sequence']}")
             # TODO: improve this condition, too dummy
-            if step_index % 8 == 0:
+            if step_sequence % 8 == 0:
+                print(f"MOVEMENT FACE DETECTION {route_step['step_sequence']}")
                 result_detection = self.__movement_face_detection_routine()
-                if result_detection == 'movement detection':
+                if result_detection == "movement detected":
+                    print(f"MOVEMENT DETECTED {route_step['step_sequence']}")
                     id_camera_triggering = self.__insert_route_execution_movement_detection(
                         route_step['step_sequence']
                     )
                     self.__notify_route_execution_movement_detection(id_camera_triggering)
-                    self.__ctrl_esp_communication.turn_on_buzzer()
+                    success = self.__ctrl_esp_communication.turn_on_buzzer()
+                    while not success:
+                        success = self.__ctrl_esp_communication.turn_on_buzzer()
+                        time_sleep(0.8)
 
-                if result_detection == 'face detection':
+                if result_detection ==  "face detected":
+                    print(f"FACE DETECTED {route_step['step_sequence']}")
                     id_camera_triggering = self.__insert_route_execution_face_detection(
                         route_step['step_sequence']
                     )
                     self.__notify_route_execution_face_detection(id_camera_triggering)
-                    self.__ctrl_esp_communication.turn_on_buzzer()
+
+                    success = self.__ctrl_esp_communication.turn_on_buzzer()
+                    while not success:
+                        success = self.__ctrl_esp_communication.turn_on_buzzer()
+                        time_sleep(0.8)
+
                     # TODO: implement the logic to understand user command to stop buzzer
 
             if (route_step['right_pwm_intensity'] == 0
                 and route_step['left_pwm_intensity'] == 0
             ):
-                id_aruco = self.__ctrl_camera.read_aruco_marker_routine()
+                print(f"READING ARUCO {route_step['step_sequence']}")
+                id_aruco = self.__ctrl_camera.read_aruco_marker_routine(
+                    self.__ctrl_esp_communication
+                )
                 # TODO: implement the logic to stop the robot if aruco marker not found
                 self.__notify_route_execution_aruco_read(
                     id_aruco

@@ -11,7 +11,7 @@ class ESPCommunicationHandler:
             'READ_COMPASS': 'crc', # not implemented
             'COMMUNICATION_TEST': 'mct', # implemented
             'TURN_OFF_BUZZER': 'tib', # not implemented
-            'TURN_ON_BUZZER': 'tab', # not implemented
+            'TURN_ON_BUZZER': 'tob', # not implemented
             'READ_BUZZER': 'rbs', # not implemented
             'READ_RIGHT_ENCODER': 'rre', # not implemented
             'READ_LEFT_ENCODER': 'rle', # not implemented
@@ -33,11 +33,12 @@ class ESPCommunicationHandler:
             size_to_read,
             False
         )
-        print(f"DATA RECEIVED FROM ESP32: {data_received_esp}")
+        # print(f"DATA RECEIVED FROM ESP32: {data_received_esp}")
 
         return data_received_esp
 
     def __send_command_to_esp32(self, data_to_send: str) -> None:
+        # print(f"DATA SENDING TO ESP32: {self.__dict_commands[data_to_send]}")
         bytes_data = self.__dict_commands[data_to_send].encode('utf-8')
 
         self.__i2c_bus.write_i2c_block_data(
@@ -67,7 +68,7 @@ class ESPCommunicationHandler:
         for byte_received in data_received_esp:
             msg_received += chr(byte_received)
 
-        print(f"STRING RECEIVED: {msg_received}")
+        # print(f"STRING RECEIVED: {msg_received}")
 
         return msg_received
 
@@ -239,7 +240,7 @@ class ESPCommunicationHandler:
         self.__send_command_to_esp32('MOVE_FORWARD')
         data = self.__read_str_from_data_from_esp32()
 
-        print(f"PWM MOTOR STATUS: {data}")
+        # print(f"PWM MOTOR STATUS: {data}")
 
         if 'OK' in data:
             return True
@@ -299,29 +300,31 @@ class ESPCommunicationHandler:
         self.__send_command_to_esp32('PLACE_CAMERA_SERVO_CENTER')
         data = self.__read_str_from_data_from_esp32()
 
-        print(f"SERVO STATUS: {data}")
+        print(f"COMANDO: {self.__dict_commands['PLACE_CAMERA_SERVO_CENTER']}")
+        print(f"SERVO STATUS CENTER: {data}")
 
-        if 'OK' in data:
+        if 'SMOK' in data:
             return True
         return False
 
     def rotate_camera_servo_right(self) -> bool:
         self.__send_command_to_esp32('TURN_CAMERA_SERVO_RIGHT')
         data = self.__read_str_from_data_from_esp32()
+        print(f"COMANDO: {self.__dict_commands['TURN_CAMERA_SERVO_RIGHT']}")
+        print(f"SERVO STATUS LEFT: {data}")
 
-        print(f"SERVO STATUS: {data}")
-
-        if 'OK' in data:
+        if 'SFOK' in data:
             return True
         return False
 
     def rotate_camera_servo_left(self) -> bool:
         self.__send_command_to_esp32('TURN_CAMERA_SERVO_LEFT')
+        print(f"COMANDO: {self.__dict_commands['TURN_CAMERA_SERVO_LEFT']}")
         data = self.__read_str_from_data_from_esp32()
 
-        print(f"SERVO STATUS: {data}")
+        print(f"SERVO STATUS RIGHT: {data}")
 
-        if 'OK' in data:
+        if 'SZOK' in data:
             return True
         return False
 
@@ -341,6 +344,6 @@ class ESPCommunicationHandler:
 
         print(f"BUZZER STATUS: {data}")
 
-        if 'OK' in data:
+        if 'BZOK' in data:
             return True
         return False

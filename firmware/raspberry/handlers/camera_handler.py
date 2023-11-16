@@ -5,7 +5,7 @@
 - Handles the algorithms to perform movement detection.
 """
 # pylint: disable = E1101:no-member, E0611:no-name-in-module, E0401:import-error
-from time import time as this_moment
+from time import time as this_moment, sleep as time_sleep
 from uuid import uuid4 as generate_unique_id
 import numpy as np
 import cv2 as cv
@@ -43,6 +43,27 @@ class CameraHandler:
         """
         return self.__last_image_unique_id
 
+    def __center_servo(self, ctrl_esp: ESPCommunicationHandler):
+        time_sleep(0.8)
+        success = ctrl_esp.center_camera_servo()
+        while not success:
+            time_sleep(0.8)
+            success = ctrl_esp.center_camera_servo()
+
+    def __right_servo(self, ctrl_esp: ESPCommunicationHandler):
+        time_sleep(0.8)
+        success = ctrl_esp.rotate_camera_servo_left()
+        while not success:
+            time_sleep(0.8)
+            success = ctrl_esp.rotate_camera_servo_left()
+
+    def __left_servo(self, ctrl_esp: ESPCommunicationHandler):
+        time_sleep(0.8)
+        success = ctrl_esp.rotate_camera_servo_right()
+        while not success:
+            time_sleep(0.8)
+            success = ctrl_esp.rotate_camera_servo_right()
+
     def __save_image_locally(self, image_to_save) -> None:
         """Save the image locally.
         """
@@ -53,6 +74,7 @@ class CameraHandler:
         imwrite(path_image_to_save, image_to_save)
 
     def __detect_movement(self, duration: int) -> bool:
+        time_sleep(1)
         cap = VideoCapture(0)
 
         fgbg = createBackgroundSubtractorMOG2(detectShadows = True)
@@ -126,15 +148,15 @@ class CameraHandler:
     def __detect_face(self) -> bool:
         # Inicializar a câmera
         cap = cv.VideoCapture(0)
-    
+
         # Verificar se a câmera foi aberta corretamente
         if not cap.isOpened():
             print("Erro ao abrir a câmera.")
             exit()
-    
+
         # Capturar um quadro (frame) da câmera
         ret, frame = cap.read()
-    
+
         # Verificar se o quadro foi capturado corretamente
         if not ret:
             print("Erro ao capturar o frame.")
@@ -149,7 +171,10 @@ class CameraHandler:
 
         # TODO: chage this two paths in the raspberry pi
         # Load YOLO model
-        net = cv.dnn.readNet("./yolov3.weights", "./yolov3.cfg")
+        net = cv.dnn.readNet(
+            "/home/erickandrade/UTFPR/IntWork3_ELEX23/firmware/raspberry/cameraDetections/yolov3.weights",
+            "/home/erickandrade/UTFPR/IntWork3_ELEX23/firmware/raspberry/cameraDetections/yolov3.cfg"
+        )
 
         # Define input image
         image = cv.imread("image.jpg")
@@ -205,7 +230,7 @@ class CameraHandler:
 
     def __detect_aruco_marker(self) -> tuple:
         #TODO: change this path in the raspberry pi
-        calib_data_path = r"D:\Users\icego\Documents\MultiMatrix.npz"
+        calib_data_path = "/home/erickandrade/UTFPR/IntWork3_ELEX23/firmware/raspberry/cameraDetections/MultiMatrix.npz"
 
         calib_data = np.load(calib_data_path)
         # print(calib_data.files)
@@ -303,37 +328,49 @@ class CameraHandler:
         return True
 
     def movement_face_detection_routine(self, ctrl_esp: ESPCommunicationHandler) -> bool:
-        ctrl_esp.center_camera_servo()
+
+        print("MOVEMENT FACE DETECTION ROUTINE")
+        # self.__center_servo(ctrl_esp)
+
+        self.__right_servo(ctrl_esp)
 
         movement_detected = self.__detect_movement(5)
+        print(f"RIGHT MOVEMENT DETECTION: {movement_detected}")
         if movement_detected:
+            self.__center_servo(ctrl_esp)
             return "movement detected"
 
-        face_detected = self.__detect_face()
-        if face_detected:
-            return "face detected"
+        # face_detected = self.__detect_face()
+        # if face_detected:
+        #     self.__center_servo(ctrl_esp)
+        #     return "face detected"
 
-        ctrl_esp.rotate_camera_servo_right()
+        self.__left_servo(ctrl_esp)
 
-        self.__detect_movement(5)
+        movement_detected = self.__detect_movement(5)
+        print(f"LEFT MOVEMENT DETECTION: {movement_detected}")
         if movement_detected:
+            self.__center_servo(ctrl_esp)
             return "movement detected"
 
-        face_detected = self.__detect_face()
-        if face_detected:
-            return "face detected"
+        # face_detected = self.__detect_face()
+        # if face_detected:
+        #     self.__center_servo(ctrl_esp)
+        #     return "face detected"
 
-        ctrl_esp.rotate_camera_servo_left()
+        self.__center_servo(ctrl_esp)
 
-        self.__detect_movement(5)
+        movement_detected = self.__detect_movement(5)
+        print(f"CENTER MOVEMENT DETECTION: {movement_detected}")
         if movement_detected:
+            self.__center_servo(ctrl_esp)
             return "movement detected"
 
-        face_detected = self.__detect_face()
-        if face_detected:
-            return "face detected"
+        # face_detected = self.__detect_face()
+        # if face_detected:
+        #     self.__center_servo(ctrl_esp)
+        #     return "face detected"
 
-        ctrl_esp.center_camera_servo()
         return "nothing detected"
 
     def read_aruco_marker_routine(self, ctrl_esp: ESPCommunicationHandler) -> int:
@@ -347,33 +384,38 @@ class CameraHandler:
             int: id of the aruco marker.
         """
         detected = False
+        print(f"READING ARUCO ROUTINE: {detected}")
+        self.__center_servo(ctrl_esp)
 
-        success = ctrl_esp.center_camera_servo()
-        while not success:
-            success = ctrl_esp.center_camera_servo()
-
-        detected, center_dist, linear_dist, id_aruco = self.__detect_aruco_marker()
-        if detected:
-            self.__reposition_aruco_reference(center_dist, linear_dist, ctrl_esp)
-            return id_aruco
-
-        success = ctrl_esp.rotate_camera_servo_right()
-        while not success:
-            success = ctrl_esp.rotate_camera_servo_right()
+        self.__right_servo(ctrl_esp)
 
         detected, center_dist, linear_dist, id_aruco = self.__detect_aruco_marker()
+        print(f"READING ARUCO RIGHT: {detected}")
         if detected:
             self.__reposition_aruco_reference(center_dist, linear_dist, ctrl_esp)
+
+            self.__center_servo(ctrl_esp)
             return id_aruco
 
-        success = ctrl_esp.rotate_camera_servo_left()
-        while not success:
-            success = ctrl_esp.rotate_camera_servo_left()
+        self.__left_servo(ctrl_esp)
 
         detected, center_dist, linear_dist, id_aruco = self.__detect_aruco_marker()
+        print(f"READING ARUCO LEFT: {detected}")
         if detected:
             self.__reposition_aruco_reference(center_dist, linear_dist, ctrl_esp)
+            self.__center_servo(ctrl_esp)
             return id_aruco
-        return 0
+
+        self.__center_servo(ctrl_esp)
+
+        detected, center_dist, linear_dist, id_aruco = self.__detect_aruco_marker()
+        print(f"READING ARUCO CENTER: {detected}")
+        if detected:
+            self.__reposition_aruco_reference(center_dist, linear_dist, ctrl_esp)
+            self.__center_servo(ctrl_esp)
+            return id_aruco
+
+        self.__center_servo(ctrl_esp)
+        return -1
 
 # pylint: enable = E1101:no-member, E0611:no-name-in-module, E0401:import-error

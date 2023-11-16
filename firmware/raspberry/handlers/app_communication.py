@@ -45,13 +45,13 @@ class AppCommunicationHandler(FlaskView):
         execution_succed = obj_patrole.route_recording.move_forward()
 
         return {"status": 200, "value": execution_succed}
-    
+
     @route("/recording_rotate_left", methods = ['GET', 'POST'])
     def post_recording_rotate_left(self):
         execution_succed = obj_patrole.route_recording.rotate_left()
 
         return {"status": 200, "value": execution_succed}
-    
+
     @route("/recording_rotate_right", methods = ['GET', 'POST'])
     def post_recording_rotate_right(self):
         execution_succed = obj_patrole.route_recording.rotate_right()
@@ -61,8 +61,9 @@ class AppCommunicationHandler(FlaskView):
     @route("/recording_read_aruco", methods = ['GET', 'POST'])
     def post_recording_read_aruco(self):
         id_aruco = obj_patrole.route_recording.read_aruco_marker()
-
-        return {"status": 200, "aruco": id_aruco}
+        response = {"status": 200, "aruco": f"{id_aruco}"}
+        print(f"RESPONSE READ ARUCO: {response}")
+        return response
 
     @route("/end_route_recording_mode", methods = ['GET', 'POST'])
     def post_end_route_recording(self):

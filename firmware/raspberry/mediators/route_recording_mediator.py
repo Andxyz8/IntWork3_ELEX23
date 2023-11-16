@@ -1,6 +1,7 @@
+from copy import deepcopy
 from handlers.esp_communication import ESPCommunicationHandler
-from database.database_controller import DatabaseController
 from handlers.camera_handler import CameraHandler
+from database.database_controller import DatabaseController
 
 
 class RouteRecordingMediator:
@@ -17,6 +18,10 @@ class RouteRecordingMediator:
         self.__id_route = None
         self.__route_steps = []
 
+        self.__first_aruco = None
+        self.__previous_aruco = None
+        self.__current_aruco = None
+
     def __add_route_step(
         self,
         step_type: str,
@@ -28,8 +33,8 @@ class RouteRecordingMediator:
         if step_type == 'MF':
             step = {
                 'step_sequence': f'{step_number}/',
-                'start_aruco_marker': 1,
-                'next_aruco_marker': 2,
+                'start_aruco_marker': self.__current_aruco,
+                'next_aruco_marker': 0,
                 'number_rotations_left_encoder': 3,
                 'number_rotations_right_encoder': 3,
                 'left_pwm_intensity': pwm_intensity_left,
@@ -39,8 +44,8 @@ class RouteRecordingMediator:
         if step_type == 'RL':
             step = {
                 'step_sequence': f'{step_number}/',
-                'start_aruco_marker': 1,
-                'next_aruco_marker': 2,
+                'start_aruco_marker': self.__current_aruco,
+                'next_aruco_marker': 0,
                 'number_rotations_left_encoder': 4,
                 'number_rotations_right_encoder': 2,
                 'left_pwm_intensity': 0,
@@ -50,8 +55,8 @@ class RouteRecordingMediator:
         if step_type == 'RR':
             step = {
                 'step_sequence': f'{step_number}/',
-                'start_aruco_marker': 1,
-                'next_aruco_marker': 2,
+                'start_aruco_marker': self.__current_aruco,
+                'next_aruco_marker': 0,
                 'number_rotations_left_encoder': 2,
                 'number_rotations_right_encoder': 4,
                 'left_pwm_intensity': 48,
@@ -61,8 +66,8 @@ class RouteRecordingMediator:
         if step_type == 'RA':
             step = {
                 'step_sequence': f'{step_number}/',
-                'start_aruco_marker': 1,
-                'next_aruco_marker': 2,
+                'start_aruco_marker': self.__current_aruco,
+                'next_aruco_marker': 0,
                 'number_rotations_left_encoder': 0,
                 'number_rotations_right_encoder': 0,
                 'left_pwm_intensity': 0,
@@ -97,10 +102,18 @@ class RouteRecordingMediator:
         return self.__ctrl_esp.rotate_right()
 
     def read_aruco_marker(self) -> int:
-        self.__add_route_step('RA')
-        return self.__ctrl_camera.read_aruco_marker_routine(
+
+        if self.__first_aruco is not None:
+            self.__previous_aruco = deepcopy(self.__current_aruco)
+
+        self.__current_aruco = self.__ctrl_camera.read_aruco_marker_routine(
             self.__ctrl_esp
         )
+        if self.__first_aruco is None:
+            self.__first_aruco = deepcopy(self.__current_aruco)
+
+        self.__add_route_step('RA')
+        return self.__current_aruco
 
     def move_forward_fine(
         self,
@@ -126,7 +139,7 @@ class RouteRecordingMediator:
         n_repeats: int,
         interval_between_repeats: str
     ) -> None:
-        self.__id_route = self.__ctrl_database.update_route_recording_end(
+        self.__ctrl_database.update_route_recording_end(
             self.__id_route,
             title,
             description,
