@@ -1,5 +1,5 @@
+from os import remove as os_remove, listdir as os_listdir
 from json import load as json_load
-from uuid import uuid4 as generate_uuid
 from pandas import DataFrame
 from pyrebase.pyrebase import Storage, Firebase
 from pyrebase import initialize_app as pyrebase_initialize_app
@@ -12,6 +12,7 @@ class DatabaseController:
     __cloud_storage: Storage
 
     def __init__(self) -> None:
+        self.__path_images = './handlers/.imgs/'
         self.__initialize_firebase()
 
     def __initialize_firebase(self) -> bool:
@@ -34,6 +35,17 @@ class DatabaseController:
 
         return True
 
+    def __remove_older_files(self) -> None:
+        # Get all the archives from the captured images path
+        list_files = os_listdir(self.__path_images)
+
+        # Keeps the readme info archive to that directory
+        list_files.remove('readme.md')
+
+        # Iterates over every image file and delete them
+        for file_name in list_files:
+            os_remove(f"{self.__path_images}{file_name}")
+
     def __upload_image_to_cloud_storage(self, image_unique_id: str) -> str:
         """Upload an image to the cloud storage and return its URL.
 
@@ -44,7 +56,7 @@ class DatabaseController:
             str: url of the image in the cloud storage.
         """
         # endpoint_firebase = f"route_execution/{image_unique_id}"
-        path_image_locally =  f"./handlers/.imgs/{image_unique_id}.jpeg"
+        path_image_locally =  f"{self.__path_images}{image_unique_id}.jpeg"
 
         response = self.__cloud_storage.child(
             'route_execution'
@@ -56,6 +68,8 @@ class DatabaseController:
         firebase_url_image = self.__cloud_storage.child(
             path_image_storage
         ).get_url(response['downloadTokens'])
+
+        self.__remove_older_files()
 
         return firebase_url_image
 
@@ -77,7 +91,7 @@ class DatabaseController:
                 '{reason}',
                 '{image_url}',
                 TIMESTAMP '{get_str_datetime_agora()}'
-            );
+            ) RETURNING id_camera_triggering;
         """
         id_camera_triggering = self.__cloud_database.execute_insert(
             query_insert,
@@ -97,7 +111,7 @@ class DatabaseController:
                 {id_route_execution},
                 '{reason}',
                 TIMESTAMP '{get_str_datetime_agora()}'
-            );
+            ) RETURNING id_alarm_triggering;
         """
         id_camera_triggering = self.__cloud_database.execute_insert(
             query_insert,
