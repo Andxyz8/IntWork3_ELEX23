@@ -34,6 +34,11 @@ void app_main(){
     init_i2c_config_compass_module();
     printf("FINISHED STARTING COMPASS MODULE PWM HANDLER.\n");
 
+    // D13
+    printf("STARTING STARTING BUZZER.\n");
+    init_buzzer_config();
+    printf("FINISHED STARTING BUZZER.\n");
+
     printf("STARTING TASK HANDLER.\n");
     initialize_interruption_handler();
     printf("FINISHED TASK HANDLER.\n");

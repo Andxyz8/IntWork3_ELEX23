@@ -130,12 +130,12 @@ void task_controller(void *params){
                 }
 
                 if ((char) command_received[0] == 'o' && (char) command_received[1] == 'b') {
-                    printf("COMMAND RESPONSE FOR TURN OFF BUZZER: ob\n");
+                    printf("COMMAND RESPONSE FOR TURN ON BUZZER: ob\n");
                     // turn off buzzer
-                    gpio_set_level(GPIO_18_BUZZER, 0);
+                    turn_on_buzzer();
 
                     // send information asked to raspberry
-                    i2c_handler_send_data((uint8_t *) "BZOF");
+                    i2c_handler_send_data((uint8_t *) "BZOK");
                 }
                 free(command_received);
                 printf("ENCERRANDO TRATAMENTO DA INTERRUPCAO\n");
