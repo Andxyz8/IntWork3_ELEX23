@@ -60,51 +60,88 @@ export default function Monitor({ route, navigation }) {
     );
     const [imageName, setImageName] = useState("images");
     const [notificationIds, setNotificationIds] = useState([])
-    const [statusMessage, setStatusMessage] = useState("Robot between 1 and 2 Aruco Marker")
-    const [lastAruco, setLastAruco] = useState(1)
+    const [statusMessage, setStatusMessage] = useState("Starting route")
+    const [lastAruco, setLastAruco] = useState("")
+    var startTime = new Date();
+    var aruco_read = 0;
     const id_route = route.params.id_route
+    const [currentDateTime, setCurrentDateTime] = useState(null);
+
+    useEffect(() => {
+        // Verifica se a data já foi obtida antes de buscar novamente
+        if (!currentDateTime) {
+          // Obtém a data e hora do momento atual
+          const currentDate = new Date();
+          
+          // Atualiza o estado com a data e hora atual
+          setCurrentDateTime(currentDate);
+    
+          // Pode fazer outras operações relacionadas à primeira entrada aqui
+          console.log('Data obtida pela primeira vez:', currentDate);
+        }
+      }, [currentDateTime]);
+
+    const handleNotifications = async (title: string) => {
+        const { status } = await Notifications.getPermissionsAsync();
+
+        if (status !== "granted") {
+            Alert.alert("Você não deixou as notificações ativas");
+
+            return;
+        }
+
+        await Notifications.scheduleNotificationAsync({
+            content: {
+                title: title,
+                body: "Please open the app to see more about the information."
+            },
+            trigger: {
+                seconds: 1
+            }
+        });
+    };
 
     useEffect(() => {
 
-        const handleNotifications = async (title: string) => {
-            const { status } = await Notifications.getPermissionsAsync();
-    
-            if (status !== "granted") {
-                Alert.alert("Você não deixou as notificações ativas");
-    
-                return;
-            }
-    
-            await Notifications.scheduleNotificationAsync({
-                content: {
-                    title: title,
-                    body: "Please open the app to see more about the information."
-                },
-                trigger: {
-                    seconds: 1
-                }
-            });
-        };
+        console.log("id_route", id_route)
+
+        
 
         const yourFunction = async () => {
             
             if(isAlert == true) return;
-         
+            
             try {
                 const res = await getNotifications(id_route);
-
+                
 
                 for (var notification of res) {
-                    const newId = notificationIds.find(id => id == notification.id_notification);
+                    const data = new Date(notification.moment);
+                    console.log(data)
 
-                    if (newId) { return; }
+
+                    // if(data > currentDateTime){
+                    //     console.log("nova data")
+                    //     break;
+                    // } else if (data == currentDateTime) {
+                    //     console.log("data igual")
+                    // } else {
+                    //     console.log("????")
+                    // }
+                    const newId = notificationIds.find(id => id == notification.id_notification);
+                    if (newId) { continue; }
 
                     var aux = notificationIds
+                    aux.push(notification.id_notification)
                     setNotificationIds(aux);
+
+                    // console.log("notification ids")
+                    console.log(notificationIds)
+                    // console.log(notification)
 
                     if(notification.message == "person_detection"){
                         await handleNotifications("Patrole detected a person!");
-                        setStatusMessage(`Person detected between ${lastAruco} and ${lastAruco+1} ArUCo Marker.`)
+                        setStatusMessage(`Person detected after ${aruco_read} ArUCo Marker.`)
                         setIsAlert(true)
 
                         const images = await getImage(notification.value)
@@ -115,13 +152,13 @@ export default function Monitor({ route, navigation }) {
                             if(url){
                                 setImageUrl(url)
                             } else {
-                                setImageUrl('https://imageio.forbes.com/specials-images/imageserve/5ed68e8310716f0007411996/A-black-screen--like-the-one-that-overtook-the-internet-on-the-morning-of-June-2-/960x0.jpg?format=jpg&width=960')
+                                setImageUrl('https://s2-valor-investe.glbimg.com/6rz0LBRXcB9VjxPjwE7b7f57enI=/0x0:2121x1414/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_f035dd6fd91c438fa04ab718d608bbaa/internal_photos/bs/2019/W/b/DwpFARQielKiHhdUFi1Q/gettyimages-1126107652-1-.jpg')
                             }
                         }
 
                     } else if (notification.message == "movement_detection"){
                         await handleNotifications("Patrole detected movement!");
-                        setStatusMessage(`Movement detected between ${lastAruco} and ${lastAruco+1} ArUCo Marker.`)
+                        setStatusMessage(`Movement detected after ArUCo ${aruco_read}.`)
                         setIsAlert(true)
 
                         const images = await getImage(notification.value)
@@ -137,13 +174,26 @@ export default function Monitor({ route, navigation }) {
                         }
                     } else if (notification.message == "aruco_read"){
                         const numberAruco = Number(notification.value)
-                        setLastAruco(numberAruco)
+                        console.log(notification.value)
+                        console.log(numberAruco)
+                        console.log("entrei")
+                        setLastAruco(notification.value)
+                        aruco_read = numberAruco
+                        console.log(lastAruco)
+                        setStatusMessage(`Last ArUCo read was ${aruco_read}`)
                     } else if (notification.message == "route_execution_status"){
-                        if(notification.value){
+                        if(notification.value == "Executing"){
+                            if (lastAruco == "") {
+                                setStatusMessage("Executing")
+                            }
+                        }
+
+                        if(notification.value == "Finalized"){
                             setStatusMessage("Finalized Route")
                         }
                     }
                     
+                    break;
                     
                     
                 }
