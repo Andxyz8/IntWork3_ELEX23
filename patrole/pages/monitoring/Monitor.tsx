@@ -17,7 +17,7 @@ import raspberryAPI from "../../services/raspberryAPI";
 import BackgroundTimer from 'react-native-background-timer';
 
 export default function Monitor({ route, navigation }) {
-    const { getNotifications, getImage } = raspberryAPI();
+    const { getNotifications, getImage, stopAlarmContinueRoute, stopAlarmStopRoute } = raspberryAPI();
 
     const logoImage = `
         <?xml version="1.0" encoding="utf-8"?>
@@ -38,6 +38,8 @@ export default function Monitor({ route, navigation }) {
     const [lastAruco, setLastAruco] = useState("")
     const [intervalCall, setIntervalCall] = useState(0)
     const [patrolsDone, setPatrolsDone] = useState(0)
+
+    const [routeExecutionId, setRouteExecutionId] = useState(0)
     
     
     // Dados passados para a monitor
@@ -51,7 +53,9 @@ export default function Monitor({ route, navigation }) {
     const auxDate = new Date();
     let offsetInMinutes = -3 * 60;
     let currentDate = new Date(auxDate.getTime() + offsetInMinutes * 60000);
+
     var route_execution_id = -1
+
     
 
     const handleNotifications = async (title: string) => {
@@ -113,11 +117,12 @@ export default function Monitor({ route, navigation }) {
                             if(url){
                                 setImageUrl(url)
                             } else {
-                                setImageUrl('https://s2-valor-investe.glbimg.com/6rz0LBRXcB9VjxPjwE7b7f57enI=/0x0:2121x1414/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_f035dd6fd91c438fa04ab718d608bbaa/internal_photos/bs/2019/W/b/DwpFARQielKiHhdUFi1Q/gettyimages-1126107652-1-.jpg')
+                                setImageUrl("")
                             }
                         }
 
                         route_execution_id = notification.id_route_execution
+                        console.log("execution id: ", route_execution_id)
 
                     } else if (notification.message == "movement_detection"){
                         await handleNotifications("Patrole detected movement!");
@@ -135,7 +140,8 @@ export default function Monitor({ route, navigation }) {
                                 setImageUrl('https://imageio.forbes.com/specials-images/imageserve/5ed68e8310716f0007411996/A-black-screen--like-the-one-that-overtook-the-internet-on-the-morning-of-June-2-/960x0.jpg?format=jpg&width=960')
                             }
                         }
-                        route_execution_id = notification.id_route_execution
+                        setRouteExecutionId(notification.id_route_execution)
+                        console.log("execution id: ", route_execution_id)
 
                     } else if (notification.message == "aruco_read"){
 
@@ -153,7 +159,8 @@ export default function Monitor({ route, navigation }) {
                             setStatusMessage(`Last ArUCo read was ${aruco_read}`)
 
                         }
-                        route_execution_id = notification.id_route_execution
+                        setRouteExecutionId(notification.id_route_execution)
+                        console.log("execution id: ", route_execution_id)
 
                     } else if (notification.message == "route_execution_status"){
                         if(notification.value == "Executing"){
@@ -165,17 +172,17 @@ export default function Monitor({ route, navigation }) {
                             setStatusMessage("Finalized Route")
                             const aux = patrolsDone + 1
                             setPatrolsDone(aux)
+                            // console.log("numbeer patrols: ", number_patrols)
 
-                            if(patrolsDone >= number_patrols){
-                                console.log("chamei")
+                            if(patrolsDone >= number_patrols || !number_patrols){
                                 await navigation.navigate("RouteList", route.params.address)
                             }
+
                         }
-                        route_execution_id = notification.id_route_execution
+                        setRouteExecutionId(notification.id_route_execution)
+                        console.log("execution id: ", route_execution_id)
                     }
-                    
-                    break;
-                    
+                                        
                     
                 }
                 // setFlag(!flag);
@@ -201,11 +208,14 @@ export default function Monitor({ route, navigation }) {
 
     const continueRoute = async () => {
         setIsAlert(false)
-        // enviar route_execution_id
+        await stopAlarmContinueRoute(String(routeExecutionId))
     };
 
     const stopRoute = async () => {
-        setIsAlert(true)
+        console.log("stop route")
+        console.log(routeExecutionId)
+        setIsAlert(false)
+        await stopAlarmStopRoute(String(routeExecutionId))
         await navigation.navigate("RouteList", route.params.address)
     };
 
@@ -261,7 +271,7 @@ export default function Monitor({ route, navigation }) {
                         <Text style={styles.boldText}>Number of patrols:  </Text>
                         <Text style={styles.normalText}>{number_patrols ?? "not set"}</Text>
                     </Text>
-                    <Text style={styles.descriptionContainer}>
+                    {/* <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>O id é: {id_route} </Text>
                     </Text>
                     <Text style={styles.descriptionContainer}>
@@ -270,13 +280,14 @@ export default function Monitor({ route, navigation }) {
                     <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>O alerta está ligado? </Text>
                         <Text style={styles.normalText}>{isAlert == true ? "sim" : "nao"}</Text>
-                    </Text>
-                    <Text style={styles.descriptionContainer}>
+                    </Text> */}
+                    {/* <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>Notification Ids: </Text>
                         <Text style={styles.normalText}>{notificationIds}</Text>
-                    </Text>
+                    </Text> */}
                     {isAlert && (
                         <View>
+                            { imageUrl != ""  ??
                             <View style={styles.imageContainer}>
                                 <Image
                                     source={{ uri: imageUrl }} // Adjust the path to your image
@@ -284,6 +295,7 @@ export default function Monitor({ route, navigation }) {
                                 />
                                 <Text>Image Captured by Patrole</Text>
                             </View>
+                            }
 
                             <View style={styles.filler} />
 

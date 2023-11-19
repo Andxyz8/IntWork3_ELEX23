@@ -13,6 +13,8 @@ interface Api {
     startRouteExct(address: string, id_route: any): Promise<boolean>;
     getNotifications(id: string): Promise<Notification[]>;
     getImage(id: string): Promise<CameraTriggering[]>;
+    stopAlarmContinueRoute(id: string): Promise<boolean>;
+    stopAlarmStopRoute(id: string): Promise<boolean>;
 }
 
 interface Route {
@@ -325,6 +327,8 @@ function raspberryAPI(): Api {
         startRouteExct,
         getNotifications,
         getImage,
+        stopAlarmContinueRoute,
+        stopAlarmStopRoute
     };
 }
 

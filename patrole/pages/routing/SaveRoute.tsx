@@ -7,6 +7,7 @@ import {
     Platform,
     SafeAreaView,
     TextInput,
+    ScrollView,
 } from "react-native";
 import { StyleSheet } from "react-native";
 import raspberryAPI from "../../services/raspberryAPI";
@@ -39,79 +40,85 @@ export default function SaveRoute({ route, navigation }) {
                 <Text style={styles.headerTxt2}>Routing Completed</Text>
             </View>
 
-            <View style={styles.config}>
-                <Text style={{ fontSize: 20 }}> Name of the Route: </Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={(nme) => {
-                        setName(nme);
-                    }}
-                />
+            <ScrollView style = {styles.scrollView}>
 
-                <Text style={{ fontSize: 20 }}>Interval between routes</Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={(interv) => {
-                        setInterval(interv);
-                    }}
-                    keyboardType="numeric"
-                />
+                <View style={styles.config}>
+                    <Text style={{ fontSize: 20 }}> Name of the Route: </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(nme) => {
+                            setName(nme);
+                        }}
+                    />
 
-                <Text style={{ fontSize: 20 }}> Number of patrols: </Text>
-                <TextInput
-                    style={styles.input}
-                    onChangeText={(patr) => {
-                        setPatrols(patr);
-                    }}
-                    keyboardType="numeric"
-                />
-            </View>
+                    <Text style={{ fontSize: 20 }}>Interval between routes</Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(interv) => {
+                            setInterval(interv);
+                        }}
+                        keyboardType="numeric"
+                    />
 
-            <View style={styles.saveContainer}>
-                <TouchableOpacity
-                    style={styles.save}
-                    onPress={() => saveRoute()}
-                >
-                    <View>
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                lineHeight: 70,
-                                color: "white",
-                                fontSize: 25,
-                            }}
-                        >
-                            Save Route
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
-            <View style={styles.cancelContainer}>
-                <TouchableOpacity
-                    style={styles.cancel}
-                    onPress={() =>
-                        navigation.navigate("RouteList", route.params)
-                    }
-                >
-                    <View>
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                lineHeight: 70,
-                                color: "#0864f4",
-                                fontSize: 25,
-                            }}
-                        >
-                            Cancel
-                        </Text>
-                    </View>
-                </TouchableOpacity>
-            </View>
+                    <Text style={{ fontSize: 20 }}> Number of patrols: </Text>
+                    <TextInput
+                        style={styles.input}
+                        onChangeText={(patr) => {
+                            setPatrols(patr);
+                        }}
+                        keyboardType="numeric"
+                    />
+                </View>
+
+                <View style={styles.saveContainer}>
+                    <TouchableOpacity
+                        style={styles.save}
+                        onPress={() => saveRoute()}
+                    >
+                        <View>
+                            <Text
+                                style={{
+                                    textAlign: "center",
+                                    lineHeight: 70,
+                                    color: "white",
+                                    fontSize: 25,
+                                }}
+                            >
+                                Save Route
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={styles.cancelContainer}>
+                    <TouchableOpacity
+                        style={styles.cancel}
+                        onPress={() =>
+                            navigation.navigate("RouteList", route.params)
+                        }
+                    >
+                        <View>
+                            <Text
+                                style={{
+                                    textAlign: "center",
+                                    lineHeight: 70,
+                                    color: "#0864f4",
+                                    fontSize: 25,
+                                }}
+                            >
+                                Cancel
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
         </View>
     );
 }
 
 const styles = StyleSheet.create({
+    scrollView: {
+        width: `${100}%`,
+    },
     container: {
         flex: 1,
         backgroundColor: "white",
