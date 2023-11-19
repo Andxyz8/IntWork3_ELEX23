@@ -110,7 +110,7 @@ app.get("/stop_alarm_continue_route/:id", function (req, res) {
         `INSERT INTO notification (id_route_execution, message, value, moment) VALUES (${
             req.params.id
         }, 'continue_route_stop_alarm', True, to_timestamp((${
-            Date.now() + 1000 * 60 * -new Date().getTimezoneOffset()
+            Date.now() + 1000 * 60 * -180
         }) / 1000.0))`,
         async function (err, result) {
             if (err) {
@@ -128,7 +128,7 @@ app.get("/stop_alarm_stop_route/:id", function (req, res) {
         `INSERT INTO notification (id_route_execution, message, value, moment) VALUES (${
             req.params.id
         }, 'continue_route_stop_alarm', False, to_timestamp((${
-            Date.now() + 1000 * 60 * -new Date().getTimezoneOffset()
+            Date.now() + 1000 * 60 * -180
         }) / 1000.0))`,
         async function (err, result) {
             if (err) {
