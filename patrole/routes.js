@@ -15,7 +15,6 @@ const client = new Client({
 const app = express();
 
 app.get("/", function (req, res) {
-    console.log("OI");
     res.send("NOTHING TO SEE HERE");
     return;
 });
@@ -26,7 +25,6 @@ app.get("/users", function (req, res) {
         if (err) {
             return console.error("error running query", err);
         }
-        console.log(result);
         res.send(result.rows);
         return;
     });
@@ -37,7 +35,6 @@ app.get("/robots", function (req, res) {
         if (err) {
             return console.error("error running query", err);
         }
-        console.log(result);
         res.send(result.rows);
 
         return;
@@ -80,7 +77,7 @@ app.get("/disconnect", function (req, res) {
 
 app.get("/notification/:id", function (req, res) {
     client.query(
-        `SELECT * FROM notification WHERE id_route_execution = ${req.params.id}`,
+        `SELECT * FROM route_execution INNER JOIN route ON route.id_route = route_execution.id_route INNER JOIN notification ON notification.id_route_execution = route_execution.id_route_execution WHERE route.id_route = ${req.params.id}`,
         async function (err, result) {
             if (err) {
                 return console.error("error running query", err);
@@ -95,6 +92,44 @@ app.get("/notification/:id", function (req, res) {
 app.get("/camera_triggering/:id", function (req, res) {
     client.query(
         `SELECT * FROM camera_triggering WHERE id_camera_triggering = ${req.params.id}`,
+        async function (err, result) {
+            if (err) {
+                return console.error("error running query", err);
+            }
+            res.send(result.rows);
+
+            return;
+        }
+    );
+});
+
+//97
+
+app.get("/stop_alarm_continue_route/:id", function (req, res) {
+    client.query(
+        `INSERT INTO notification (id_route_execution, message, value, moment) VALUES (${
+            req.params.id
+        }, 'continue_route_stop_alarm', True, to_timestamp((${
+            Date.now() + 1000 * 60 * -new Date().getTimezoneOffset()
+        }) / 1000.0))`,
+        async function (err, result) {
+            if (err) {
+                return console.error("error running query", err);
+            }
+            res.send(result.rows);
+
+            return;
+        }
+    );
+});
+
+app.get("/stop_alarm_stop_route/:id", function (req, res) {
+    client.query(
+        `INSERT INTO notification (id_route_execution, message, value, moment) VALUES (${
+            req.params.id
+        }, 'continue_route_stop_alarm', False, to_timestamp((${
+            Date.now() + 1000 * 60 * -new Date().getTimezoneOffset()
+        }) / 1000.0))`,
         async function (err, result) {
             if (err) {
                 return console.error("error running query", err);
