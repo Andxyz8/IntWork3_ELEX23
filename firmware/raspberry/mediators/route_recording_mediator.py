@@ -83,6 +83,28 @@ class RouteRecordingMediator:
         for step in self.__route_steps:
             step['step_sequence'] += f'{last}'
 
+    def __format_next_aruco_marker(self):
+        total_steps = len(self.__route_steps)
+        index_previous_aruco_start = 0
+        for idx in range(total_steps):
+            # if is the last aruco end formating
+            if idx + 1 == total_steps:
+                break
+
+            # if the next step is aruco reading
+            if (self.__route_steps[idx + 1]['left_pwm_intensity'] == 0
+                and self.__route_steps[idx + 1]['right_pwm_intensity'] == 0
+            ):
+                index_previous_aruco_end = idx + 1
+                id_next_aruco_marker = deepcopy(
+                    self.__route_steps[index_previous_aruco_end]['start_aruco_marker']
+                )
+                for index_change in range(index_previous_aruco_start, index_previous_aruco_end):
+                    self.__route_steps[index_change]['next_aruco_marker'] = deepcopy(
+                        id_next_aruco_marker
+                    )
+                index_previous_aruco_start = deepcopy(index_previous_aruco_end)
+
     def __insert_new_route(self):
         self.__id_route = self.__ctrl_database.insert_route_recording_start()
 
@@ -173,6 +195,8 @@ class RouteRecordingMediator:
         )
 
         self.__format_step_sequence()
+
+        self.__format_next_aruco_marker()
 
         self.__ctrl_database.insert_route_steps(
             self.__id_route,
