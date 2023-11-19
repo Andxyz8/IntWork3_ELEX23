@@ -273,6 +273,46 @@ function raspberryAPI(): Api {
         });
     };
 
+    const stopAlarmStopRoute = async (id: string) => {
+        return connect().then(async (res) => {
+            if (res) {
+                const response = await fetch(
+                    server + `/stop_alarm_stop_route/${id}`,
+                    {
+                        method: "get",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+                if (response.ok) return true;
+                return false;
+            }
+        });
+    };
+
+    const stopAlarmContinueRoute = async (id: string) => {
+        return connect().then(async (res) => {
+            if (res) {
+                const response = await fetch(
+                    server + `/stop_alarm_continue_route/${id}`,
+                    {
+                        method: "get",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                    }
+                );
+
+                if (response.ok) return true;
+                return false;
+            }
+        });
+    };
+
     return {
         getConnection,
         sendCommandFoward,
