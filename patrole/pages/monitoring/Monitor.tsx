@@ -8,6 +8,7 @@ import {
     Image,
     SafeAreaView,
     TextInput,
+    ScrollView,
 } from "react-native";
 import { StyleSheet } from "react-native";
 import useBLE from "../../services/useBLE";
@@ -74,12 +75,9 @@ export default function Monitor({ route, navigation }) {
     const total_arucos = route.params.total_arucos
 
     const [patrolsDone, setPatrolsDone] = useState(0)
-    const currentDate = new Date();
-    const currentDateUTCString = currentDate.toUTCString();
-
-    // Create a new Date object from the UTC-formatted string
-    const currentDateUTC = new Date(currentDateUTCString);
-
+    const auxDate = new Date();
+    let offsetInMinutes = -3 * 60;
+    let currentDate = new Date(auxDate.getTime() + offsetInMinutes * 60000);
 
     const handleNotifications = async (title: string) => {
         const { status } = await Notifications.getPermissionsAsync();
@@ -101,23 +99,11 @@ export default function Monitor({ route, navigation }) {
         });
     };
 
-    useFocusEffect(
-        React.useCallback(() => {
-           
-
-        }, [])
-    );
-
-    
-
     useEffect(() => {
 
         const yourFunction = async () => {
             
             if(isAlert == true) return;
-
-            console.log(currentDate)
-            console.log(currentDateUTC)
             
             try {
                 const res = await getNotifications(id_route);
@@ -128,11 +114,15 @@ export default function Monitor({ route, navigation }) {
                     const data = new Date(notification.moment);
                     
                     
+                    console.log("current date")
+                    console.log(currentDate)
 
-                    // if(data < currentDateUTC){
-                    //     console.log("data")
-                    //     continue;
-                    // } 
+                    console.log("banco date")
+                    console.log(data)
+                    if(data < currentDate){
+                        console.log("data")
+                        continue;
+                    } 
 
                     const newId = notificationIds.find(id => id == notification.id_notification);
                     if (newId) { continue; }
@@ -243,12 +233,14 @@ export default function Monitor({ route, navigation }) {
 
     const stopRoute = async () => {
         setIsAlert(true)
+        await navigation.navigate("RouteList", route.params.address)
     };
 
     
 
     return (
         <SafeAreaView style={styles.container}>
+            
 
             <View style={styles.header}>
                 <SvgXml
@@ -258,6 +250,8 @@ export default function Monitor({ route, navigation }) {
                     style={styles.headerImage}
                 />
             </View>
+
+            <ScrollView style={styles.scrollView}>
 
             <View style={styles.body}>
                 <View>
@@ -338,19 +332,15 @@ export default function Monitor({ route, navigation }) {
                     )}
                 </View>
             </View>
-
-            {/* <View style={styles.title}>
-                <Text style={styles.routesTitle}>Your Routes</Text>
-            </View>
-
-            <View>
-                <Text style={styles.noRoutes}>You have no saved routes</Text>
-            </View> */}
+            </ScrollView>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
+    scrollView: {
+        width: `${100}%`,
+    },
     filler: {
         height: 50,
     },
