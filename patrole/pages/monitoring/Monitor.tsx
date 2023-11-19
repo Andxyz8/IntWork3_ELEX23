@@ -64,6 +64,7 @@ export default function Monitor({ route, navigation }) {
     const [statusMessage, setStatusMessage] = useState("Starting route")
     const [lastAruco, setLastAruco] = useState("")
     const [intervalCall, setIntervalCall] = useState(0)
+    const [intervalFunction, setIntervalFunction] = useState(0)
     var startTime = new Date();
     var aruco_read = 0;
 
@@ -74,6 +75,10 @@ export default function Monitor({ route, navigation }) {
 
     const [patrolsDone, setPatrolsDone] = useState(0)
     const currentDate = new Date();
+    const currentDateUTCString = currentDate.toUTCString();
+
+    // Create a new Date object from the UTC-formatted string
+    const currentDateUTC = new Date(currentDateUTCString);
 
 
     const handleNotifications = async (title: string) => {
@@ -107,11 +112,12 @@ export default function Monitor({ route, navigation }) {
 
     useEffect(() => {
 
-        console.log("id_route", id_route)
-
         const yourFunction = async () => {
-          
+            
             if(isAlert == true) return;
+
+            console.log(currentDate)
+            console.log(currentDateUTC)
             
             try {
                 const res = await getNotifications(id_route);
@@ -119,8 +125,12 @@ export default function Monitor({ route, navigation }) {
 
                 for (var notification of res) {
                     
-                    // const data = new Date(notification.moment);                 
-                    // if(data < currentDate){
+                    const data = new Date(notification.moment);
+                    
+                    
+
+                    // if(data < currentDateUTC){
+                    //     console.log("data")
                     //     continue;
                     // } 
 
@@ -170,13 +180,19 @@ export default function Monitor({ route, navigation }) {
                         }
                     } else if (notification.message == "aruco_read"){
                         const numberAruco = Number(notification.value)
-                        console.log(notification.value)
-                        console.log(numberAruco)
-                        console.log("entrei")
-                        setLastAruco(notification.value)
-                        aruco_read = numberAruco
-                        console.log(lastAruco)
-                        setStatusMessage(`Last ArUCo read was ${aruco_read}`)
+                        if(notification.value == "-1"){
+                            setIsAlert(true)
+                            await handleNotifications("Patrole didnt detect ArUCo.")
+                            setStatusMessage(`Could not find ArUCo! Last ArUCo read was ${aruco_read}.`)
+                        } else {
+                            console.log(notification.value)
+                            console.log(numberAruco)
+                            console.log("entrei")
+                            setLastAruco(notification.value)
+                            aruco_read = numberAruco
+                            console.log(lastAruco)
+                            setStatusMessage(`Last ArUCo read was ${aruco_read}`)
+                        }
                     } else if (notification.message == "route_execution_status"){
                         if(notification.value == "Executing"){
                             if (lastAruco == "") {
