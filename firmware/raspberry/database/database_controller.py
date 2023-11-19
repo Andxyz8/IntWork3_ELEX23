@@ -142,14 +142,16 @@ class DatabaseController:
         title: str,
         description: str,
         n_repeats: int,
-        interval_between_repeats: float
+        interval_between_repeats: float,
+        number_arucos_readed: int
     ) -> None:
         query_update = f"""
             UPDATE route SET
                 title = '{title}',
                 description = '{description}',
                 number_repeats = {n_repeats},
-                interval_between_repeats = {interval_between_repeats}
+                interval_between_repeats = {interval_between_repeats},
+                total_readed_aruco_markers = {number_arucos_readed}
             WHERE id_route = {id_route};
         """
         self.__cloud_database.execute_update(query_update)

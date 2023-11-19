@@ -19,8 +19,8 @@ class RouteRecordingMediator:
         self.__route_steps = []
 
         self.__first_aruco = None
-        self.__previous_aruco = None
         self.__current_aruco = None
+        self.__number_arucos_readed = 0
 
     def __add_route_step(
         self,
@@ -64,6 +64,7 @@ class RouteRecordingMediator:
                 'compass_module_degrees': 0
             }
         if step_type == 'RA':
+            self.__number_arucos_readed += 1
             step = {
                 'step_sequence': f'{step_number}/',
                 'start_aruco_marker': self.__current_aruco,
@@ -137,14 +138,16 @@ class RouteRecordingMediator:
         title: str,
         description: str,
         n_repeats: int,
-        interval_between_repeats: str
+        interval_between_repeats: str,
+        number_arucos_readed: int
     ) -> None:
         self.__ctrl_database.update_route_recording_end(
             self.__id_route,
             title,
             description,
             n_repeats,
-            interval_between_repeats
+            interval_between_repeats,
+            number_arucos_readed
         )
 
     def end_route_recording(
@@ -165,7 +168,8 @@ class RouteRecordingMediator:
             title,
             description,
             n_repeats,
-            interval_between_repeats
+            interval_between_repeats,
+            self.__number_arucos_readed
         )
 
         self.__format_step_sequence()
