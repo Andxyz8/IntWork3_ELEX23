@@ -42,9 +42,8 @@ interface CameraTriggering {
     moment: Date;
 }
 
-
-//mudar para ip local
-const server = "http://192.168.15.182:3001";
+// //mudar para ip local
+// const server = "http://192.168.15.182:3001";
 
 function raspberryAPI(): Api {
     const getConnection = async () => {
@@ -57,9 +56,9 @@ function raspberryAPI(): Api {
 
             for (let i = 1; i <= 254; i++) {
                 address = `http://${ipString}.${i}:5002/command`;
-                console.log(address)
+                console.log(address);
                 try {
-                    console.log("trying1")
+                    console.log("trying1");
                     const response = await fetch(address, {
                         method: "GET",
                         headers: {
@@ -179,17 +178,19 @@ function raspberryAPI(): Api {
             id_robot: "1",
         };
 
-        const response = await fetch(address + "/route_execution_mode", {
-            method: "POST",
-            body: JSON.stringify(body),
-            headers: {
-                "Content-Type": "application/json",
-                Accept: "application/json",
-            },
-        });
-
-        if (response.ok) return true;
-        return false;
+        try {
+            const response = await fetch(address + "/route_execution_mode", {
+                method: "POST",
+                body: JSON.stringify(body),
+                headers: {
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                },
+            });
+            return true;
+        } catch {
+            return false;
+        }
     };
 
     const connect = async () => {
@@ -248,17 +249,19 @@ function raspberryAPI(): Api {
     };
 
     const getImage = async (id: string) => {
-        
         let images: CameraTriggering[] = [];
         return connect().then(async (res) => {
             if (res) {
-                const response = await fetch(server + `/camera_triggering/${id}`, {
-                    method: "get",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Accept: "application/json",
-                    },
-                });
+                const response = await fetch(
+                    server + `/camera_triggering/${id}`,
+                    {
+                        method: "get",
+                        headers: {
+                            "Content-Type": "application/json",
+                            Accept: "application/json",
+                        },
+                    }
+                );
 
                 const result = await response.json();
 
@@ -280,7 +283,7 @@ function raspberryAPI(): Api {
         getRoutes,
         startRouteExct,
         getNotifications,
-        getImage
+        getImage,
     };
 }
 
