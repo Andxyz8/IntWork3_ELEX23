@@ -31,7 +31,7 @@ export default function ButtonP(props) {
 const styles = StyleSheet.create({
     buttonPrimary: {
         display: "flex",
-        padding: 12,
+        padding: 20,
         paddingLeft: 24,
         paddingRight: 24,
         flexDirection: "column",
@@ -46,7 +46,7 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
 
         display: "flex",
-        padding: 12,
+        padding: 20,
         paddingLeft: 24,
         paddingRight: 24,
         flexDirection: "column",
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
         color: "white",
         textAlign: "center",
         fontFamily: "SF Pro", // Replace with your desired font family
-        fontSize: 16,
+        fontSize: 20,
         fontStyle: "normal",
         fontWeight: "700",
         lineHeight: 28,
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
         color: "#0864f4",
         textAlign: "center",
         fontFamily: "SF Pro", // Replace with your desired font family
-        fontSize: 16,
+        fontSize: 20,
         fontStyle: "normal",
         fontWeight: "700",
         lineHeight: 28,
