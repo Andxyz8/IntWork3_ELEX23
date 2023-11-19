@@ -12,6 +12,7 @@ import {
 import { StyleSheet } from "react-native";
 import useBLE from "../../services/useBLE";
 import { SvgXml } from "react-native-svg";
+import { useFocusEffect } from "@react-navigation/native";
 
 import * as Notifications from "expo-notifications";
 import { Alert } from "react-native";
@@ -65,9 +66,12 @@ export default function Monitor({ route, navigation }) {
     const [intervalCall, setIntervalCall] = useState(0)
     var startTime = new Date();
     var aruco_read = 0;
+
     const id_route = route.params.id_route
     const number_patrols = route.params.number_patrols
     const interval_patrols = route.params.interval_patrols
+    const total_arucos = route.params.total_arucos
+
     const [patrolsDone, setPatrolsDone] = useState(0)
     const currentDate = new Date();
 
@@ -92,6 +96,13 @@ export default function Monitor({ route, navigation }) {
         });
     };
 
+    useFocusEffect(
+        React.useCallback(() => {
+           
+
+        }, [])
+    );
+
     
 
     useEffect(() => {
@@ -107,13 +118,8 @@ export default function Monitor({ route, navigation }) {
                 
 
                 for (var notification of res) {
-                    const data = new Date(notification.moment);
-
-
-                    console.log(currentDate)
-                    console.log(data)                    
+                    const data = new Date(notification.moment);                 
                     if(data < currentDate){
-                        console.log("nova data")
                         continue;
                     } 
 
@@ -201,6 +207,8 @@ export default function Monitor({ route, navigation }) {
         const intervalId = BackgroundTimer.setInterval(() => {
             const aux = intervalCall + 1
             setIntervalCall(aux)
+            console.log("aux")
+            console.log(aux)
             yourFunction();
             
         }, 5*1000);
@@ -208,7 +216,7 @@ export default function Monitor({ route, navigation }) {
         return () => {
           BackgroundTimer.clearInterval(intervalId);
         };
-      }, [id_route, isAlert]);
+      }, [id_route, isAlert, intervalCall, notificationIds, statusMessage, imageUrl]);
 
     // TODO save notification id when resolved
 
@@ -251,6 +259,10 @@ export default function Monitor({ route, navigation }) {
                 </View>
 
                 <View>
+                    <Text style={styles.descriptionContainer}>
+                        <Text style={styles.boldText}>Total of ArUCo markers: </Text>
+                        <Text style={styles.normalText}>{total_arucos ?? "not set"}</Text>
+                    </Text>
                     <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>Patrols done: </Text>
                         <Text style={styles.normalText}>{patrolsDone}</Text>
