@@ -118,10 +118,11 @@ export default function Monitor({ route, navigation }) {
                 
 
                 for (var notification of res) {
-                    const data = new Date(notification.moment);                 
-                    if(data < currentDate){
-                        continue;
-                    } 
+                    
+                    // const data = new Date(notification.moment);                 
+                    // if(data < currentDate){
+                    //     continue;
+                    // } 
 
                     const newId = notificationIds.find(id => id == notification.id_notification);
                     if (newId) { continue; }
@@ -282,6 +283,14 @@ export default function Monitor({ route, navigation }) {
                     </Text>
                     <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>O intervalo rodou {intervalCall} vezes.</Text>
+                    </Text>
+                    <Text style={styles.descriptionContainer}>
+                        <Text style={styles.boldText}>O alerta está ligado? </Text>
+                        <Text style={styles.normalText}>{isAlert == true ? "sim" : "nao"}</Text>
+                    </Text>
+                    <Text style={styles.descriptionContainer}>
+                        <Text style={styles.boldText}>Notification Ids: </Text>
+                        <Text style={styles.normalText}>{notificationIds}</Text>
                     </Text>
                     {isAlert && (
                         <View>
