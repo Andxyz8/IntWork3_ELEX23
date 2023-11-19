@@ -13,6 +13,8 @@ import { StyleSheet } from "react-native";
 import raspberryAPI from "../../services/raspberryAPI";
 import { ScrollableComponent } from "react-native-keyboard-aware-scroll-view";
 import { useFocusEffect } from "@react-navigation/native";
+import HeaderP from "../../Components/HeaderP";
+import ButtonP from "../../Components/ButtonP";
 
 interface Route {
     id_route: number;
@@ -68,9 +70,7 @@ export default function RouteList({ route, navigation }) {
     }
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTxt}>PATROLE</Text>
-            </View>
+            <HeaderP text={false} txt1={""} txt2={""} />
 
             <View style={styles.title}>
                 <Text style={styles.routesTitle}>Your Routes</Text>
@@ -115,20 +115,11 @@ export default function RouteList({ route, navigation }) {
             </ScrollView>
 
             <View style={styles.addContainer}>
-                <TouchableOpacity style={styles.add} onPress={() => addRoute()}>
-                    <View>
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                lineHeight: 70,
-                                color: "white",
-                                fontSize: 25,
-                            }}
-                        >
-                            Add New Route
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                <ButtonP
+                    primary={true}
+                    txt={"Add New Route"}
+                    onPress={() => addRoute()}
+                />
             </View>
         </View>
     );
@@ -140,25 +131,10 @@ const styles = StyleSheet.create({
         backgroundColor: "white",
         alignItems: "center",
     },
-    header: {
-        position: "absolute",
-        backgroundColor: "#0864f4",
-        height: "20%",
-        width: "100%",
-        color: "white",
-    },
-    headerTxt: {
-        position: "relative",
-        color: "white",
-        textAlign: "center",
-        fontSize: 30,
-        paddingTop: 80,
-    },
     routesTitle: {
         position: "relative",
         color: "black",
         fontSize: 25,
-        paddingTop: 220,
         fontWeight: "bold",
     },
     title: {
@@ -182,8 +158,9 @@ const styles = StyleSheet.create({
         text: "white",
     },
     addContainer: {
-        position: "absolute",
-        bottom: 50,
+        flex: 1, // This makes the body take up the remaining space
+        width: "100%", // Ensure the body takes up the full width
+        padding: 20, // Add padding as needed
     },
     routeContainer: {
         marginTop: 10,
@@ -204,6 +181,6 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         width: `${100}%`,
-        maxHeight: `${55}%`,
+        maxHeight: `${65}%`,
     },
 });
