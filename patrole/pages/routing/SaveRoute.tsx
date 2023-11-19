@@ -1,16 +1,9 @@
 import React, { useMemo, useState } from "react";
-import {
-    TouchableOpacity,
-    PermissionsAndroid,
-    View,
-    Text,
-    Platform,
-    SafeAreaView,
-    TextInput,
-    ScrollView,
-} from "react-native";
+import { View, Text, SafeAreaView, TextInput, ScrollView } from "react-native";
 import { StyleSheet } from "react-native";
 import raspberryAPI from "../../services/raspberryAPI";
+import HeaderP from "../../Components/HeaderP";
+import ButtonP from "../../Components/ButtonP";
 
 export default function SaveRoute({ route, navigation }) {
     const [name, setName] = useState("");
@@ -34,14 +27,14 @@ export default function SaveRoute({ route, navigation }) {
     }
 
     return (
-        <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTxt1}>STATUS OF SETUP</Text>
-                <Text style={styles.headerTxt2}>Routing Completed</Text>
-            </View>
+        <SafeAreaView style={styles.container}>
+            <HeaderP
+                text={true}
+                txt1="STATUS OF SETUP"
+                txt2="Routing Completed"
+            />
 
-            <ScrollView style = {styles.scrollView}>
-
+            <ScrollView style={styles.scrollView}>
                 <View style={styles.config}>
                     <Text style={{ fontSize: 20 }}> Name of the Route: </Text>
                     <TextInput
@@ -51,7 +44,9 @@ export default function SaveRoute({ route, navigation }) {
                         }}
                     />
 
-                    <Text style={{ fontSize: 20 }}>Interval between routes</Text>
+                    <Text style={{ fontSize: 20 }}>
+                        Interval between routes
+                    </Text>
                     <TextInput
                         style={styles.input}
                         onChangeText={(interv) => {
@@ -68,50 +63,24 @@ export default function SaveRoute({ route, navigation }) {
                         }}
                         keyboardType="numeric"
                     />
-                </View>
 
-                <View style={styles.saveContainer}>
-                    <TouchableOpacity
-                        style={styles.save}
+                    <View style={styles.filler} />
+                    <ButtonP
+                        primary={true}
+                        txt={"Save"}
                         onPress={() => saveRoute()}
-                    >
-                        <View>
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    lineHeight: 70,
-                                    color: "white",
-                                    fontSize: 25,
-                                }}
-                            >
-                                Save Route
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.cancelContainer}>
-                    <TouchableOpacity
-                        style={styles.cancel}
+                    />
+
+                    <ButtonP
+                        primary={false}
+                        txt={"Cancel"}
                         onPress={() =>
                             navigation.navigate("RouteList", route.params)
                         }
-                    >
-                        <View>
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    lineHeight: 70,
-                                    color: "#0864f4",
-                                    fontSize: 25,
-                                }}
-                            >
-                                Cancel
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
+                    />
                 </View>
             </ScrollView>
-        </View>
+        </SafeAreaView>
     );
 }
 
@@ -123,13 +92,10 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: "white",
         alignItems: "center",
+        justifyContent: "center",
     },
     header: {
-        position: "absolute",
-        backgroundColor: "#0864f4",
-        height: "30%",
         width: "100%",
-        color: "white",
     },
     headerTxt1: {
         position: "relative",
@@ -146,9 +112,9 @@ const styles = StyleSheet.create({
         fontSize: 20,
     },
     config: {
-        position: "relative",
-        top: 300,
-        right: 30,
+        flex: 1, // This makes the body take up the remaining space
+        width: "100%", // Ensure the body takes up the full width
+        padding: 16, // Add padding as needed
     },
     input: {
         height: 40,
@@ -159,29 +125,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         padding: 10,
     },
-    save: {
-        backgroundColor: "#0864f4",
-        height: 70,
-        width: 400,
-        borderRadius: 15,
-        text: "white",
-    },
-    cancel: {
-        backgroundColor: "white",
-        height: 70,
-        width: 400,
-        borderRadius: 15,
-        text: "#0864f4",
-        borderColor: "#0864f4",
-        borderStyle: "solid",
-        borderWidth: 3,
-    },
-    saveContainer: {
-        position: "absolute",
-        bottom: 150,
-    },
-    cancelContainer: {
-        position: "absolute",
-        bottom: 50,
+
+    filler: {
+        height: 200,
     },
 });
