@@ -1,41 +1,20 @@
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
     TouchableOpacity,
-    PermissionsAndroid,
     View,
     Text,
-    Platform,
     Image,
     SafeAreaView,
-    TextInput,
     ScrollView,
 } from "react-native";
 import { StyleSheet } from "react-native";
-import useBLE from "../../services/useBLE";
 import { SvgXml } from "react-native-svg";
-import { useFocusEffect } from "@react-navigation/native";
 
 import * as Notifications from "expo-notifications";
 import { Alert } from "react-native";
-import Constants from "expo-constants";
 
-import firebase from "@react-native-firebase/app";
-import firestore from "@react-native-firebase/firestore";
-import storage from "@react-native-firebase/storage";
 import raspberryAPI from "../../services/raspberryAPI";
-
 import BackgroundTimer from 'react-native-background-timer';
-
-const firebaseConfig = {
-    apiKey: "AIzaSyCQWGj9ce_s0D_Z--GMk3Zv0Ko1DZLRgxc",
-    authDomain: "mall-security-robot-e52f0.firebaseapp.com",
-    projectId: "mall-security-robot-e52f0",
-    storageBucket: "mall-security-robot-e52f0.appspot.com",
-    messagingSenderId: "339307833562",
-    appId: "1:339307833562:web:3cea7b202f6a4ddfd95de3",
-    measurementId: "G-8LF452GW03",
-    databaseURL: "",
-};
 
 export default function Monitor({ route, navigation }) {
     const { getNotifications, getImage } = raspberryAPI();
@@ -49,35 +28,31 @@ export default function Monitor({ route, navigation }) {
         </svg>
     `;
 
-    var imageReference = "";
-
-    var warning = true;
-    var statusTextStyle = warning
-        ? styles.statusBoxTextWarning
-        : styles.statusBoxText;
 
     const [isAlert, setIsAlert] = useState(false);
     const [imageUrl, setImageUrl] = useState(
         "https://i.pinimg.com/736x/43/ca/f7/43caf7050017bdae87b1a87551b00961.jpg"
     );
-    const [imageName, setImageName] = useState("images");
     const [notificationIds, setNotificationIds] = useState([])
     const [statusMessage, setStatusMessage] = useState("Starting route")
     const [lastAruco, setLastAruco] = useState("")
     const [intervalCall, setIntervalCall] = useState(0)
-    const [intervalFunction, setIntervalFunction] = useState(0)
-    var startTime = new Date();
-    var aruco_read = 0;
+    const [patrolsDone, setPatrolsDone] = useState(0)
+    
+    
+    // Dados passados para a monitor
 
     const id_route = route.params.id_route
     const number_patrols = route.params.number_patrols
     const interval_patrols = route.params.interval_patrols
     const total_arucos = route.params.total_arucos
 
-    const [patrolsDone, setPatrolsDone] = useState(0)
+    var aruco_read = 0;
     const auxDate = new Date();
     let offsetInMinutes = -3 * 60;
     let currentDate = new Date(auxDate.getTime() + offsetInMinutes * 60000);
+    var route_execution_id = -1
+    
 
     const handleNotifications = async (title: string) => {
         const { status } = await Notifications.getPermissionsAsync();
@@ -101,26 +76,19 @@ export default function Monitor({ route, navigation }) {
 
     useEffect(() => {
 
-        const yourFunction = async () => {
+        const checkNotifications = async () => {
             
             if(isAlert == true) return;
             
             try {
                 const res = await getNotifications(id_route);
-                
-
+            
                 for (var notification of res) {
                     
                     const data = new Date(notification.moment);
-                    
-                    
-                    console.log("current date")
-                    console.log(currentDate)
 
-                    console.log("banco date")
-                    console.log(data)
+                    // A notificação só vai ser lida se a data for após o momento de início
                     if(data < currentDate){
-                        console.log("data")
                         continue;
                     } 
 
@@ -131,11 +99,8 @@ export default function Monitor({ route, navigation }) {
                     aux.push(notification.id_notification)
                     setNotificationIds(aux);
 
-                    // console.log("notification ids")
-                    console.log(notificationIds)
-                    // console.log(notification)
-
                     if(notification.message == "person_detection"){
+
                         await handleNotifications("Patrole detected a person!");
                         setStatusMessage(`Person detected after ${aruco_read} ArUCo Marker.`)
                         setIsAlert(true)
@@ -151,6 +116,8 @@ export default function Monitor({ route, navigation }) {
                                 setImageUrl('https://s2-valor-investe.glbimg.com/6rz0LBRXcB9VjxPjwE7b7f57enI=/0x0:2121x1414/984x0/smart/filters:strip_icc()/i.s3.glbimg.com/v1/AUTH_f035dd6fd91c438fa04ab718d608bbaa/internal_photos/bs/2019/W/b/DwpFARQielKiHhdUFi1Q/gettyimages-1126107652-1-.jpg')
                             }
                         }
+
+                        route_execution_id = notification.id_route_execution
 
                     } else if (notification.message == "movement_detection"){
                         await handleNotifications("Patrole detected movement!");
@@ -168,21 +135,26 @@ export default function Monitor({ route, navigation }) {
                                 setImageUrl('https://imageio.forbes.com/specials-images/imageserve/5ed68e8310716f0007411996/A-black-screen--like-the-one-that-overtook-the-internet-on-the-morning-of-June-2-/960x0.jpg?format=jpg&width=960')
                             }
                         }
+                        route_execution_id = notification.id_route_execution
+
                     } else if (notification.message == "aruco_read"){
+
                         const numberAruco = Number(notification.value)
                         if(notification.value == "-1"){
+
                             setIsAlert(true)
                             await handleNotifications("Patrole didnt detect ArUCo.")
                             setStatusMessage(`Could not find ArUCo! Last ArUCo read was ${aruco_read}.`)
+
                         } else {
-                            console.log(notification.value)
-                            console.log(numberAruco)
-                            console.log("entrei")
+
                             setLastAruco(notification.value)
                             aruco_read = numberAruco
-                            console.log(lastAruco)
                             setStatusMessage(`Last ArUCo read was ${aruco_read}`)
+
                         }
+                        route_execution_id = notification.id_route_execution
+
                     } else if (notification.message == "route_execution_status"){
                         if(notification.value == "Executing"){
                             if (lastAruco == "") {
@@ -199,6 +171,7 @@ export default function Monitor({ route, navigation }) {
                                 await navigation.navigate("RouteList", route.params.address)
                             }
                         }
+                        route_execution_id = notification.id_route_execution
                     }
                     
                     break;
@@ -216,7 +189,7 @@ export default function Monitor({ route, navigation }) {
             setIntervalCall(aux)
             console.log("aux")
             console.log(aux)
-            yourFunction();
+            checkNotifications();
             
         }, 5*1000);
       
@@ -225,10 +198,10 @@ export default function Monitor({ route, navigation }) {
         };
       }, [id_route, isAlert, intervalCall, notificationIds, statusMessage, imageUrl]);
 
-    // TODO save notification id when resolved
 
     const continueRoute = async () => {
         setIsAlert(false)
+        // enviar route_execution_id
     };
 
     const stopRoute = async () => {
