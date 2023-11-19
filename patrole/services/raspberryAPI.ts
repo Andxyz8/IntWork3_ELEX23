@@ -23,6 +23,7 @@ interface Route {
     number_repeats: number;
     created_at: Date;
     interval_between_repeats: number;
+    total_readed_aruco_markers: number;
 }
 
 interface Notification {

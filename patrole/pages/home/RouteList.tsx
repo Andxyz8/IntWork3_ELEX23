@@ -22,6 +22,7 @@ interface Route {
     number_repeats: number;
     created_at: Date;
     interval_between_repeats: number;
+    total_readed_aruco_markers: number;
 }
 
 export default function RouteList({ route, navigation }) {
@@ -34,8 +35,6 @@ export default function RouteList({ route, navigation }) {
 
     useFocusEffect(
         React.useCallback(() => {
-            console.log("callback")
-            console.log(route.params)
             getRoutes().then((res) => {
                 setRoutes(res);
                 setFlag(!flag);
@@ -64,6 +63,7 @@ export default function RouteList({ route, navigation }) {
             id_route: exectRoute.id_route,
             number_patrols: exectRoute.number_repeats,
             interval_patrols: exectRoute.interval_between_repeats,
+            total_arucos: exectRoute.total_readed_aruco_markers,
         });
     }
     return (
