@@ -4,6 +4,8 @@ import { TouchableOpacity, View, Text } from "react-native";
 
 import Icon from "react-native-vector-icons/FontAwesome";
 import raspberryAPI from "../../services/raspberryAPI";
+import HeaderP from "../../Components/HeaderP";
+import ButtonP from "../../Components/ButtonP";
 
 export default function RemoteControls({ route, navigation }) {
     const {
@@ -40,10 +42,7 @@ export default function RemoteControls({ route, navigation }) {
 
     return (
         <View style={styles.container}>
-            <View style={styles.header}>
-                <Text style={styles.headerTxt1}>STATUS OF SETUP</Text>
-                <Text style={styles.headerTxt2}>Routing</Text>
-            </View>
+            <HeaderP text={true} txt1="STATUS OF SETUP" txt2="Routing" />
 
             <View style={styles.upContainer}>
                 <TouchableOpacity
@@ -96,70 +95,31 @@ export default function RemoteControls({ route, navigation }) {
             </View>
 
             <View style={styles.cancelContainer}>
-                <TouchableOpacity
-                    style={styles.cancel}
+                <ButtonP
+                    primary={false}
+                    txt={"Cancel Process"}
                     onPress={() =>
                         navigation.navigate("RouteList", route.params)
                     }
-                >
-                    <View>
-                        <Text
-                            style={{
-                                textAlign: "center",
-                                lineHeight: 70,
-                                color: "#0864f4",
-                                fontSize: 25,
-                            }}
-                        >
-                            Cancel Process
-                        </Text>
-                    </View>
-                </TouchableOpacity>
+                />
             </View>
             {!controls ? (
                 <View style={styles.readContainer}>
-                    <TouchableOpacity
-                        style={styles.read}
-                        disabled={controls}
-                        //onPress={() => sendCommand(device, "READ")}
+                    <ButtonP
+                        primary={true}
+                        txt={"Read ArUco"}
                         onPress={() => sendControl("READ")}
-                    >
-                        <View>
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    lineHeight: 70,
-                                    color: "white",
-                                    fontSize: 25,
-                                }}
-                            >
-                                Read ArUco
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
+                    />
                 </View>
             ) : (
                 <View style={styles.readContainer}>
-                    <TouchableOpacity
-                        style={styles.read}
-                        //onPress={() => sendCommand(device, "READ")}
+                    <ButtonP
+                        primary={true}
+                        txt={"Save Route"}
                         onPress={() =>
                             navigation.navigate("SaveRoute", route.params)
                         }
-                    >
-                        <View>
-                            <Text
-                                style={{
-                                    textAlign: "center",
-                                    lineHeight: 70,
-                                    color: "white",
-                                    fontSize: 25,
-                                }}
-                            >
-                                Save Route
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
+                    />
                 </View>
             )}
         </View>
@@ -172,30 +132,11 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         alignItems: "center",
     },
-    header: {
-        position: "absolute",
-        backgroundColor: "#0864f4",
-        height: "30%",
-        width: "100%",
-        color: "white",
-    },
-    headerTxt1: {
-        position: "relative",
-        color: "rgba(255,255,255, 0.7)",
-        textAlign: "center",
-        fontSize: 20,
-        paddingTop: 120,
-    },
-    headerTxt2: {
-        position: "relative",
-        color: "white",
-        textAlign: "center",
-        paddingTop: 20,
-        fontSize: 20,
-    },
     controls: {
         //position: "absolute",
-        alignItems: "center",
+        flex: 1, // This makes the body take up the remaining space
+        width: "100%", // Ensure the body takes up the full width
+        padding: 16, // Add padding as needed
     },
     up: {
         backgroundColor: "#0864f4",
@@ -248,10 +189,12 @@ const styles = StyleSheet.create({
     },
     readContainer: {
         position: "absolute",
-        bottom: 150,
+        bottom: 130,
+        width: `${90}%`,
     },
     cancelContainer: {
         position: "absolute",
         bottom: 50,
+        width: `${90}%`,
     },
 });
