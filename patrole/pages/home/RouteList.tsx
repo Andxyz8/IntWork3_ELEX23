@@ -53,11 +53,15 @@ export default function RouteList({ route, navigation }) {
         });
     }
 
-    function executeRoute(id_route: any) {
-        startRouteExct(address, id_route).then((res) => {
-            setRoutes([]);
-            setFlag(!flag);
-            if (res) navigation.navigate("Monitor", { address: route.params, id_route: id_route });
+    function executeRoute(exectRoute: Route) {
+        startRouteExct(address, exectRoute.id_route);
+        setRoutes([]);
+        setFlag(!flag);
+        navigation.navigate("Monitor", {
+            address: route.params,
+            id_route: exectRoute.id_route,
+            number_patrols: exectRoute.number_repeats,
+            interval_patrols: exectRoute.interval_between_repeats,
         });
     }
     return (
@@ -80,9 +84,7 @@ export default function RouteList({ route, navigation }) {
                                     style={styles.routeContainer}
                                 >
                                     <TouchableOpacity
-                                        onPress={() =>
-                                            executeRoute(route.id_route)
-                                        }
+                                        onPress={() => executeRoute(route)}
                                         style={styles.routeText}
                                     >
                                         <Text style={styles.routeTitle}>
