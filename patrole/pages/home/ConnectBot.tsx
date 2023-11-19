@@ -11,6 +11,7 @@ import {
 import { StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
 import raspberryAPI from "../../services/raspberryAPI";
+import HeaderP from "../../Components/HeaderP";
 
 export default function ConnectBot({ navigation }) {
     const [connecting, setConnecting] = useState(false);
@@ -28,7 +29,7 @@ export default function ConnectBot({ navigation }) {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.headerTxt}>PATROLE</Text>
+                <HeaderP text={false} txt1={""} txt2={""} />
             </View>
             {connecting ? (
                 <View style={styles.connect}>
@@ -112,6 +113,7 @@ const styles = StyleSheet.create({
         alignItems: "center",
     },
     header: {
+        paddingTop: 200,
         position: "absolute",
         backgroundColor: "#0864f4",
         height: "100%",
