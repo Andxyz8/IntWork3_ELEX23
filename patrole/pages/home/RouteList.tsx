@@ -34,6 +34,8 @@ export default function RouteList({ route, navigation }) {
 
     useFocusEffect(
         React.useCallback(() => {
+            console.log("callback")
+            console.log(route.params)
             getRoutes().then((res) => {
                 setRoutes(res);
                 setFlag(!flag);

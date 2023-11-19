@@ -62,24 +62,15 @@ export default function Monitor({ route, navigation }) {
     const [notificationIds, setNotificationIds] = useState([])
     const [statusMessage, setStatusMessage] = useState("Starting route")
     const [lastAruco, setLastAruco] = useState("")
+    const [intervalCall, setIntervalCall] = useState(0)
     var startTime = new Date();
     var aruco_read = 0;
     const id_route = route.params.id_route
-    const [currentDateTime, setCurrentDateTime] = useState(null);
+    const number_patrols = route.params.number_patrols
+    const interval_patrols = route.params.interval_patrols
+    const [patrolsDone, setPatrolsDone] = useState(0)
+    const currentDate = new Date();
 
-    useEffect(() => {
-        // Verifica se a data já foi obtida antes de buscar novamente
-        if (!currentDateTime) {
-          // Obtém a data e hora do momento atual
-          const currentDate = new Date();
-          
-          // Atualiza o estado com a data e hora atual
-          setCurrentDateTime(currentDate);
-    
-          // Pode fazer outras operações relacionadas à primeira entrada aqui
-          console.log('Data obtida pela primeira vez:', currentDate);
-        }
-      }, [currentDateTime]);
 
     const handleNotifications = async (title: string) => {
         const { status } = await Notifications.getPermissionsAsync();
@@ -101,14 +92,14 @@ export default function Monitor({ route, navigation }) {
         });
     };
 
+    
+
     useEffect(() => {
 
         console.log("id_route", id_route)
 
-        
-
         const yourFunction = async () => {
-            
+          
             if(isAlert == true) return;
             
             try {
@@ -117,17 +108,15 @@ export default function Monitor({ route, navigation }) {
 
                 for (var notification of res) {
                     const data = new Date(notification.moment);
-                    console.log(data)
 
 
-                    // if(data > currentDateTime){
-                    //     console.log("nova data")
-                    //     break;
-                    // } else if (data == currentDateTime) {
-                    //     console.log("data igual")
-                    // } else {
-                    //     console.log("????")
-                    // }
+                    console.log(currentDate)
+                    console.log(data)                    
+                    if(data < currentDate){
+                        console.log("nova data")
+                        continue;
+                    } 
+
                     const newId = notificationIds.find(id => id == notification.id_notification);
                     if (newId) { continue; }
 
@@ -186,10 +175,16 @@ export default function Monitor({ route, navigation }) {
                             if (lastAruco == "") {
                                 setStatusMessage("Executing")
                             }
-                        }
-
+                        } 
                         if(notification.value == "Finalized"){
                             setStatusMessage("Finalized Route")
+                            const aux = patrolsDone + 1
+                            setPatrolsDone(aux)
+
+                            if(patrolsDone >= number_patrols){
+                                console.log("chamei")
+                                await navigation.navigate("RouteList", route.params.address)
+                            }
                         }
                     }
                     
@@ -204,6 +199,8 @@ export default function Monitor({ route, navigation }) {
         };
       
         const intervalId = BackgroundTimer.setInterval(() => {
+            const aux = intervalCall + 1
+            setIntervalCall(aux)
             yourFunction();
             
         }, 5*1000);
@@ -215,21 +212,6 @@ export default function Monitor({ route, navigation }) {
 
     // TODO save notification id when resolved
 
-    useEffect(() => {
-
-        const initializeFirebase = async () => {
-            if (!firebase.apps.length) {
-                const firebaseApp = await firebase.initializeApp(
-                    firebaseConfig
-                );
-            } else {
-                const firebaseApp = firebase.app();
-            }
-        };
-
-        initializeFirebase();
-    }, []);
-
     const continueRoute = async () => {
         setIsAlert(false)
     };
@@ -237,6 +219,8 @@ export default function Monitor({ route, navigation }) {
     const stopRoute = async () => {
         setIsAlert(true)
     };
+
+    
 
     return (
         <SafeAreaView style={styles.container}>
@@ -268,24 +252,24 @@ export default function Monitor({ route, navigation }) {
 
                 <View>
                     <Text style={styles.descriptionContainer}>
-                        <Text style={styles.boldText}>
-                            Total of ArUCo Markers:{" "}
-                        </Text>
-                        <Text style={styles.normalText}>27</Text>
-                    </Text>
-                    <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>Patrols done: </Text>
-                        <Text style={styles.normalText}>2</Text>
+                        <Text style={styles.normalText}>{patrolsDone}</Text>
                     </Text>
                     <Text style={styles.descriptionContainer}>
                         <Text style={styles.boldText}>
-                            Interval between routes:{" "}
+                            Interval between routes: 
                         </Text>
-                        <Text style={styles.normalText}>3</Text>
+                        <Text style={styles.normalText}>{interval_patrols ?? " not set"}</Text>
                     </Text>
                     <Text style={styles.descriptionContainer}>
-                        <Text style={styles.boldText}>Number of patrols: </Text>
-                        <Text style={styles.normalText}>4</Text>
+                        <Text style={styles.boldText}>Number of patrols:  </Text>
+                        <Text style={styles.normalText}>{number_patrols ?? "not set"}</Text>
+                    </Text>
+                    <Text style={styles.descriptionContainer}>
+                        <Text style={styles.boldText}>O id é: {id_route} </Text>
+                    </Text>
+                    <Text style={styles.descriptionContainer}>
+                        <Text style={styles.boldText}>O intervalo rodou {intervalCall} vezes.</Text>
                     </Text>
                     {isAlert && (
                         <View>
