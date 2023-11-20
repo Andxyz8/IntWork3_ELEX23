@@ -181,6 +181,6 @@ const styles = StyleSheet.create({
     },
     scrollView: {
         width: `${100}%`,
-        maxHeight: `${65}%`,
+        maxHeight: `${60}%`,
     },
 });
