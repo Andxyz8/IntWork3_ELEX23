@@ -31,7 +31,7 @@ export default function Monitor({ route, navigation }) {
 
     const [isAlert, setIsAlert] = useState(false);
     const [imageUrl, setImageUrl] = useState(
-        "https://i.pinimg.com/736x/43/ca/f7/43caf7050017bdae87b1a87551b00961.jpg"
+        "https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png"
     );
     const [notificationIds, setNotificationIds] = useState([])
     const [statusMessage, setStatusMessage] = useState("Starting route")
@@ -85,6 +85,8 @@ export default function Monitor({ route, navigation }) {
             if(isAlert == true) return;
             
             try {
+                console.log("id route:")
+                console.log(id_route)
                 const res = await getNotifications(id_route);
             
                 for (var notification of res) {
@@ -106,7 +108,7 @@ export default function Monitor({ route, navigation }) {
                     if(notification.message == "person_detection"){
 
                         await handleNotifications("Patrole detected a person!");
-                        setStatusMessage(`Person detected after ${aruco_read} ArUCo Marker.`)
+                        setStatusMessage(`Person detected after ${lastAruco} ArUCo Marker.`)
                         setIsAlert(true)
 
                         const images = await getImage(notification.value)
@@ -117,16 +119,17 @@ export default function Monitor({ route, navigation }) {
                             if(url){
                                 setImageUrl(url)
                             } else {
-                                setImageUrl("")
+                                setImageUrl("https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png")
                             }
                         }
 
                         route_execution_id = notification.id_route_execution
                         console.log("execution id: ", route_execution_id)
+                        break;
 
                     } else if (notification.message == "movement_detection"){
                         await handleNotifications("Patrole detected movement!");
-                        setStatusMessage(`Movement detected after ArUCo ${aruco_read}.`)
+                        setStatusMessage(`Movement detected after ArUCo ${lastAruco}.`)
                         setIsAlert(true)
 
                         const images = await getImage(notification.value)
@@ -142,6 +145,7 @@ export default function Monitor({ route, navigation }) {
                         }
                         setRouteExecutionId(notification.id_route_execution)
                         console.log("execution id: ", route_execution_id)
+                        break;
 
                     } else if (notification.message == "aruco_read"){
 
@@ -150,8 +154,9 @@ export default function Monitor({ route, navigation }) {
 
                             setIsAlert(true)
                             await handleNotifications("Patrole didnt detect ArUCo.")
-                            setStatusMessage(`Could not find ArUCo! Last ArUCo read was ${aruco_read}.`)
-
+                            setStatusMessage(`Could not find ArUCo! Last ArUCo read was ${lastAruco}.`)
+                            setImageUrl("https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png")
+                            
                         } else {
 
                             setLastAruco(notification.value)
@@ -161,6 +166,7 @@ export default function Monitor({ route, navigation }) {
                         }
                         setRouteExecutionId(notification.id_route_execution)
                         console.log("execution id: ", route_execution_id)
+                        break;
 
                     } else if (notification.message == "route_execution_status"){
                         if(notification.value == "Executing"){
@@ -181,9 +187,9 @@ export default function Monitor({ route, navigation }) {
                         }
                         setRouteExecutionId(notification.id_route_execution)
                         console.log("execution id: ", route_execution_id)
+                        break;
                     }
                                         
-                    
                 }
                 // setFlag(!flag);
             } catch (error) {
@@ -194,8 +200,6 @@ export default function Monitor({ route, navigation }) {
         const intervalId = BackgroundTimer.setInterval(() => {
             const aux = intervalCall + 1
             setIntervalCall(aux)
-            console.log("aux")
-            console.log(aux)
             checkNotifications();
             
         }, 5*1000);
@@ -287,15 +291,12 @@ export default function Monitor({ route, navigation }) {
                     </Text> */}
                     {isAlert && (
                         <View>
-                            { imageUrl != ""  ??
                             <View style={styles.imageContainer}>
                                 <Image
                                     source={{ uri: imageUrl }} // Adjust the path to your image
                                     style={styles.image}
                                 />
-                                <Text>Image Captured by Patrole</Text>
                             </View>
-                            }
 
                             <View style={styles.filler} />
 
