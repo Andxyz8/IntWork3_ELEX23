@@ -2,7 +2,7 @@ import fetch from "node-fetch";
 import { NetworkInfo } from "react-native-network-info";
 
 interface Api {
-    getConnection(): Promise<any>;
+    getConnection(ip: string): Promise<any>;
     sendCommandFoward(address: string): Promise<boolean>;
     sendCommandRight(address: string): Promise<boolean>;
     sendCommandLeft(address: string): Promise<boolean>;
@@ -49,35 +49,24 @@ interface CameraTriggering {
 // const server = "http://192.168.15.182:3001";
 
 function raspberryAPI(): Api {
-    const getConnection = async () => {
+    const getConnection = async (ip) => {
         try {
             let address: String;
 
-            let ip = (await NetworkInfo.getIPV4Address()).split(".");
+            address = `http://${ip}:5002/command`;
+            console.log(address);
+            const response = await fetch(address, {
+                method: "GET",
+                headers: {
+                    Accept: "application/json",
+                    ContentType: "application/json",
+                },
+            });
 
-            let ipString = ip[0] + "." + ip[1] + "." + ip[2];
+            const result = await response.json();
 
-            for (let i = 1; i <= 254; i++) {
-                address = `http://${ipString}.${i}:5002/command`;
-                console.log(address);
-                try {
-                    console.log("trying1");
-                    const response = await fetch(address, {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                            ContentType: "application/json",
-                        },
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok && result.found) {
-                        return address;
-                    }
-                } catch (error) {
-                    continue;
-                }
+            if (response.ok && result.found) {
+                return address;
             }
         } catch (error) {
             if (error instanceof Error) {
@@ -328,7 +317,7 @@ function raspberryAPI(): Api {
         getNotifications,
         getImage,
         stopAlarmContinueRoute,
-        stopAlarmStopRoute
+        stopAlarmStopRoute,
     };
 }
 

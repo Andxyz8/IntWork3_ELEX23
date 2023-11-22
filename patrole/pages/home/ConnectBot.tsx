@@ -7,6 +7,7 @@ import {
     Modal,
     Pressable,
     Image,
+    TextInput,
 } from "react-native";
 import { StyleSheet } from "react-native";
 import Icon from "react-native-vector-icons/FontAwesome5";
@@ -15,12 +16,13 @@ import HeaderP from "../../Components/HeaderP";
 
 export default function ConnectBot({ navigation }) {
     const [connecting, setConnecting] = useState(false);
+    const [ip, setIp] = useState("");
 
     const { getConnection } = raspberryAPI();
 
     const t = () => {
         setConnecting(true);
-        getConnection().then((address) => {
+        getConnection(ip).then((address) => {
             setConnecting(false);
             if (address != null) navigation.navigate("RouteList", address);
         });
@@ -31,6 +33,19 @@ export default function ConnectBot({ navigation }) {
             <View style={styles.header}>
                 <HeaderP text={false} txt1={""} txt2={""} />
             </View>
+            <View style={styles.ip}>
+                <Text style={{ fontSize: 20, color: "white" }}>
+                    {" "}
+                    Patrole IP:{" "}
+                </Text>
+                <TextInput
+                    style={styles.input}
+                    onChangeText={(ip) => {
+                        setIp(ip);
+                    }}
+                />
+            </View>
+
             {connecting ? (
                 <View style={styles.connect}>
                     <Text
@@ -129,7 +144,7 @@ const styles = StyleSheet.create({
     },
     connect: {
         backgroundColor: "white",
-        top: 400,
+        top: 300,
         height: 250,
         width: 350,
         borderRadius: 30,
@@ -137,5 +152,18 @@ const styles = StyleSheet.create({
         borderColor: "#0864f4",
         borderStyle: "solid",
         borderWidth: 3,
+    },
+    input: {
+        height: 40,
+        margin: 12,
+        width: 300,
+        borderWidth: 1,
+        borderColor: "#0864f4",
+        borderRadius: 10,
+        padding: 10,
+        backgroundColor: "white",
+    },
+    ip: {
+        paddingTop: 100,
     },
 });
