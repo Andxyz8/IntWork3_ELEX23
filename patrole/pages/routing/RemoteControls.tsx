@@ -175,16 +175,16 @@ const styles = StyleSheet.create({
     },
     upContainer: {
         position: "absolute",
-        bottom: 450,
+        bottom: 400,
     },
     leftContainer: {
         position: "absolute",
-        bottom: 300,
+        bottom: 250,
         left: 50,
     },
     rightContainer: {
         position: "absolute",
-        bottom: 300,
+        bottom: 250,
         right: 50,
     },
     readContainer: {

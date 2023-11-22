@@ -115,6 +115,7 @@ const styles = StyleSheet.create({
         flex: 1, // This makes the body take up the remaining space
         width: "100%", // Ensure the body takes up the full width
         padding: 16, // Add padding as needed
+        paddingTop: 50,
     },
     input: {
         height: 40,
@@ -127,6 +128,6 @@ const styles = StyleSheet.create({
     },
 
     filler: {
-        height: 200,
+        height: 150,
     },
 });
