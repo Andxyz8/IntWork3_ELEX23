@@ -38,6 +38,7 @@ export default function Monitor({ route, navigation }) {
     const [lastAruco, setLastAruco] = useState("")
     const [intervalCall, setIntervalCall] = useState(0)
     const [patrolsDone, setPatrolsDone] = useState(0)
+    const [finalizedRoute, setFinalizedRoute] = useState(false)
 
     const [routeExecutionId, setRouteExecutionId] = useState(0)
     
@@ -49,7 +50,6 @@ export default function Monitor({ route, navigation }) {
     const interval_patrols = route.params.interval_patrols
     const total_arucos = route.params.total_arucos
 
-    var aruco_read = 0;
     const auxDate = new Date();
     let offsetInMinutes = -3 * 60;
     let currentDate = new Date(auxDate.getTime() + offsetInMinutes * 60000);
@@ -83,6 +83,7 @@ export default function Monitor({ route, navigation }) {
         const checkNotifications = async () => {
             
             if(isAlert == true) return;
+            if(finalizedRoute == true) return;
             
             try {
                 console.log("id route:")
@@ -149,19 +150,17 @@ export default function Monitor({ route, navigation }) {
 
                     } else if (notification.message == "aruco_read"){
 
-                        const numberAruco = Number(notification.value)
                         if(notification.value == "-1"){
 
                             setIsAlert(true)
                             await handleNotifications("Patrole didnt detect ArUCo.")
-                            setStatusMessage(`Could not find ArUCo! Last ArUCo read was ${lastAruco}.`)
+                            setStatusMessage(`Could not find ArUCo! Last ArUCo read was ${lastAruco == "" ? "none" : lastAruco}.`)
                             setImageUrl("https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Solid_white.svg/2048px-Solid_white.svg.png")
                             
                         } else {
 
                             setLastAruco(notification.value)
-                            aruco_read = numberAruco
-                            setStatusMessage(`Last ArUCo read was ${aruco_read}`)
+                            setStatusMessage(`Last ArUCo read was ${notification.value}`)
 
                         }
                         setRouteExecutionId(notification.id_route_execution)
@@ -179,9 +178,14 @@ export default function Monitor({ route, navigation }) {
                             const aux = patrolsDone + 1
                             setPatrolsDone(aux)
                             // console.log("numbeer patrols: ", number_patrols)
+                            console.log("patrols done", patrolsDone)
+                            console.log("number patrols", number_patrols)
 
-                            if(patrolsDone >= number_patrols || !number_patrols){
+                            if(aux >= number_patrols || !number_patrols){
+                                console.log("finalized")
                                 await navigation.navigate("RouteList", route.params.address)
+                                setFinalizedRoute(true)
+                                await handleNotifications("Patrole finalized its route.");
                             }
 
                         }
@@ -189,12 +193,16 @@ export default function Monitor({ route, navigation }) {
                         console.log("execution id: ", route_execution_id)
                         break;
                     }
+
+                    // break;
                                         
                 }
                 // setFlag(!flag);
             } catch (error) {
                 console.error('Error fetching notifications:', error);
             }
+
+            
         };
       
         const intervalId = BackgroundTimer.setInterval(() => {
@@ -207,7 +215,7 @@ export default function Monitor({ route, navigation }) {
         return () => {
           BackgroundTimer.clearInterval(intervalId);
         };
-      }, [id_route, isAlert, intervalCall, notificationIds, statusMessage, imageUrl]);
+      }, [id_route, isAlert, intervalCall, notificationIds, statusMessage, imageUrl, patrolsDone, finalizedRoute, routeExecutionId]);
 
 
     const continueRoute = async () => {
