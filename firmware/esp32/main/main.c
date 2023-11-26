@@ -5,8 +5,10 @@
 QueueHandle_t task_handler_interrupt_queue;
 i2c_cmd_handle_t i2c_cmd_compass_module;
 mcpwm_config_t pwm_timer_config;
+bool performing_movement;
 int servo_duty;
 int servo_delta;
+
 
 void app_main(){
     // // IF DIFFERENT FROM 1, PAY ATTENTION TO THIS AND CHECK THE REASON

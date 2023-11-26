@@ -24,68 +24,128 @@ void task_controller(void *params){
                 printf("PINNUMBER FUNCTION: %d\n", pin_number);
 
                 // receive the command from raspberry
-                uint8_t *command_received;
-                command_received = i2c_handler_receive_command();
-                printf("COMMAND RECEIVED: %c%c\n", command_received[0], command_received[1]);
+                uint8_t *raw_data;
+                raw_data = read_32_bytes();
+                // raw_data = i2c_handler_receive_command();
+                printf("COMMAND RECEIVED: %s\n", raw_data);
 
-                // compare command_received with possible commands
+                // printf("COMMAND ALL BYTES: %s\n", raw_data);
+                // compare raw_data with possible commands
                 // command: 'ct' -> communication test
-                if ((char) command_received[0] == 'c' && (char) command_received[1] == 't') {
+                if ((char) raw_data[0] == 'c' && (char) raw_data[1] == 't') {
                     printf("COMMAND RESPONSE FOR COMMUNICATION TEST: ct\n");
                     // send information asked to raspberry
                     i2c_handler_send_data((uint8_t *) "OKOK");
                 }
 
-                if ((char) command_received[0] == 'm' && (char) command_received[1] == 'f') {
-                    printf("COMMAND RESPONSE FOR MOVE FORWARD: mf\n");
+                // TODO: test removing stop motor movement to see if it works more continuously
+                if ((char) raw_data[0] == 'm' && (char) raw_data[1] == 'f') {
+                    // portDISABLE_INTERRUPTS();
+                    // printf("COMMAND RESPONSE FOR MOVE FORWARD: mf\n");
                     
-                    move_forward(48, 50, 1);
-                    stop_motor_movement_x_seg(1);
+                    move_forward(50, 51, 1);
+                    stop_motor_movement_x_seg(0.5);
 
                     // send information asked to raspberry
                     i2c_handler_send_data((uint8_t *) "MFOK");
+                    // portENABLE_INTERRUPTS();
                 }
 
-                if ((char) command_received[0] == 'f' && (char) command_received[1] == 'f') {
-                    printf("COMMAND RESPONSE FOR MOVE FORWARD FINE: ff\n");
-                    
-                    float left_float = i2c_handler_receive_float();
-                    float right_float = i2c_handler_receive_float();
+                if ((char) raw_data[0] == 'e' && (char) raw_data[1] == 'f') {
+                    portDISABLE_INTERRUPTS();
+                    if (!performing_movement){
+                        // printf("COMMAND RESPONSE FOR MOVE FORWARD: ef\n");
 
-                    float time_in_secs_float = i2c_handler_receive_float();
+                        move_forward(50, 53, 1);
 
-                    // receive a float from i2chandler and store in a int variable
-                    int time_in_secs = (int) time_in_secs_float;
+                        // send information asked to raspberry
+                        i2c_handler_send_data((uint8_t *) "EFOK");
+                        // TODO: test including right here to reset rx to exclude repeated queued commands
+                        performing_movement = false;
+                    } else {
+                        // clean the rx buffer
+                        // i2c_reset_rx_fifo(I2C_ESP_NUM_FOR_RASPBERRY);
+                        // send information asked to raspberry
+                        i2c_handler_send_data((uint8_t *) "NOOK");
+                    }
+                    portENABLE_INTERRUPTS();
+                }
 
-                    move_forward_fine(left_float, right_float, time_in_secs);
-                    stop_motor_movement_x_seg(1);
+                if ((char) raw_data[0] == 'e' && (char) raw_data[1] == 's') {
+                    portDISABLE_INTERRUPTS();
+                    // printf("COMMAND RESPONSE FOR STOP MOTOR: es\n");
+
+                    stop_motor_movement_x_seg(0.5);
 
                     // send information asked to raspberry
-                    i2c_handler_send_data((uint8_t *) "FFOK");
+                    i2c_handler_send_data((uint8_t *) "ESOK");
+                    performing_movement = false;
+                    portENABLE_INTERRUPTS();
                 }
 
-                if ((char) command_received[0] == 'r' && (char) command_received[1] == 'l') {
-                    printf("COMMAND RESPONSE FOR ROTATE LEFT: rl\n");
+                if ((char) raw_data[0] == 'r' && (char) raw_data[1] == 'l') {
+                    // portDISABLE_INTERRUPTS();
+                    // printf("COMMAND RESPONSE FOR ROTATE LEFT: rl\n");
                     
-                    rotate_left(40, 1);
+                    rotate_left(50, 1.9);
                     stop_motor_movement_x_seg(1);
 
                     // send information asked to raspberry
                     i2c_handler_send_data((uint8_t *) "RLOK");
+                    // portENABLE_INTERRUPTS();
                 }
 
-                if ((char) command_received[0] == 'r' && (char) command_received[1] == 'r') {
-                    printf("COMMAND RESPONSE FOR ROTATE RIGHT: rr\n");
+                if ((char) raw_data[0] == 'e' && (char) raw_data[1] == 'l') {
+                    portDISABLE_INTERRUPTS();
+                    if (!performing_movement){
+                        // printf("COMMAND RESPONSE FOR MOVE FORWARD: el\n");
 
-                    rotate_right(40, 1);
+                        rotate_left(50, 0.95);
+
+                        // send information asked to raspberry
+                        i2c_handler_send_data((uint8_t *) "ELOK");
+                        performing_movement = false;
+                    } else {
+                        // clean the rx buffer
+                        // i2c_reset_rx_fifo(I2C_ESP_NUM_FOR_RASPBERRY);
+                        // send information asked to raspberry
+                        i2c_handler_send_data((uint8_t *) "NOOK");
+                    }
+                    portENABLE_INTERRUPTS();
+                }
+
+                if ((char) raw_data[0] == 'r' && (char) raw_data[1] == 'r') {
+                    // portDISABLE_INTERRUPTS();
+                    // printf("COMMAND RESPONSE FOR ROTATE RIGHT: rr\n");
+
+                    rotate_right(50, 1.9);
                     stop_motor_movement_x_seg(1);
 
                     // send information asked to raspberry
                     i2c_handler_send_data((uint8_t *) "RROK");
+                    // portENABLE_INTERRUPTS();
+                }
+
+                if ((char) raw_data[0] == 'e' && (char) raw_data[1] == 'r') {
+                    portDISABLE_INTERRUPTS();
+
+                    if (!performing_movement){
+                        // printf("COMMAND RESPONSE FOR MOVE FORWARD: er\n");
+
+                        rotate_right(50, 0.95);
+
+                        // send information asked to raspberry
+                        i2c_handler_send_data((uint8_t *) "EROK");
+                        performing_movement = false;
+                    } else {
+                        // send information asked to raspberry
+                        i2c_handler_send_data((uint8_t *) "NOOK");
+                    }
+                    portENABLE_INTERRUPTS();
                 }
 
                 // command: 'rc' -> read compass module
-                if ((char) command_received[0] == 'r' && (char) command_received[1] == 'c') {
+                if ((char) raw_data[0] == 'r' && (char) raw_data[1] == 'c') {
                     printf("COMMAND RESPONSE FOR READ COMPASS MODULE: rc\n");
                     // get the compass value
                     int compass_value = get_compass_module_degrees();
@@ -94,15 +154,11 @@ void task_controller(void *params){
                     uint8_t *bytes_compass_value;
                     bytes_compass_value = int_to_bytes(compass_value);
 
-                    // for (int i = 0; i < 4; i++){
-                    //     printf("BYTE %d: %d\n", i, bytes_compass_value[i]);
-                    // }
-
                     // send information asked to raspberry
                     i2c_handler_send_data(bytes_compass_value);
                 }
 
-                if ((char) command_received[0] == 's' && (char) command_received[1] == 'm') {
+                if ((char) raw_data[0] == 's' && (char) raw_data[1] == 'm') {
                     printf("COMMAND RESPONSE FOR SET SERVO MIDDLE ANGLE: sm\n");
                     // set servo middle angle
                     set_servo_middle_angle();
@@ -111,7 +167,7 @@ void task_controller(void *params){
                     i2c_handler_send_data((uint8_t *) "SMOK");
                 }
 
-                if ((char) command_received[0] == 's' && (char) command_received[1] == 'f') {
+                if ((char) raw_data[0] == 's' && (char) raw_data[1] == 'f') {
                     printf("COMMAND RESPONSE FOR SET SERVO FULL ANGLE: sf\n");
                     // set servo full angle
                     set_servo_full_angle();
@@ -120,7 +176,7 @@ void task_controller(void *params){
                     i2c_handler_send_data((uint8_t *) "SFOK");
                 }
 
-                if ((char) command_received[0] == 's' && (char) command_received[1] == 'z') {
+                if ((char) raw_data[0] == 's' && (char) raw_data[1] == 'z') {
                     printf("COMMAND RESPONSE FOR SET SERVO ZERO ANGLE: sz\n");
                     // set servo zero angle
                     set_servo_zero_angle();
@@ -129,7 +185,7 @@ void task_controller(void *params){
                     i2c_handler_send_data((uint8_t *) "SZOK");
                 }
 
-                if ((char) command_received[0] == 'o' && (char) command_received[1] == 'b') {
+                if ((char) raw_data[0] == 'o' && (char) raw_data[1] == 'b') {
                     printf("COMMAND RESPONSE FOR TURN ON BUZZER: ob\n");
                     // turn off buzzer
                     turn_on_buzzer();
@@ -137,7 +193,16 @@ void task_controller(void *params){
                     // send information asked to raspberry
                     i2c_handler_send_data((uint8_t *) "BZOK");
                 }
-                free(command_received);
+
+                if ((char) raw_data[0] == 'i' && (char) raw_data[1] == 'b') {
+                    printf("COMMAND RESPONSE FOR TURN OFF BUZZER: ob\n");
+                    // turn off buzzer
+                    turn_off_buzzer();
+
+                    // send information asked to raspberry
+                    i2c_handler_send_data((uint8_t *) "BZOK");
+                }
+                free(raw_data);
                 printf("ENCERRANDO TRATAMENTO DA INTERRUPCAO\n");
             }
         }
@@ -150,14 +215,24 @@ void task_controller(void *params){
 
 void initialize_interruption_handler(){
     // Defines the controller for interruptions
-    xTaskCreate(
+    xTaskCreatePinnedToCore (
         task_controller,
         "task_controller",
-        8192,
+        2048,
         NULL,
-        1,
-        NULL
+        5,
+        NULL,
+        0
     );
+
+    //  xTaskCreate(
+    //     task_controller,
+    //     "task_controller",
+    //     8192,
+    //     NULL,
+    //     1,
+    //     NULL
+    // );
 
     gpio_install_isr_service(0);
 

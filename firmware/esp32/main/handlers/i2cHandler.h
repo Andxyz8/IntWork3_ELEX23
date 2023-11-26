@@ -6,6 +6,8 @@
 
 void i2c_handler_initialize();
 
+uint8_t* read_32_bytes();
+
 uint8_t* i2c_handler_receive_command();
 
 float i2c_handler_receive_float();

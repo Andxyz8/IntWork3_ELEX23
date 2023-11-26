@@ -18,6 +18,4 @@ void turn_on_buzzer(){
     gpio_set_level(GPIO_NUM_13, 1);
 
     vTaskDelay((1000) / portTICK_PERIOD_MS);
-
-    turn_off_buzzer();
 }
