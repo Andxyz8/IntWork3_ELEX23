@@ -168,7 +168,8 @@ class DatabaseController:
                     number_rotations_right_encoder,
                     left_pwm_intensity,
                     right_pwm_intensity,
-                    compass_module_degrees
+                    compass_module_degrees,
+                    step_type
                 ) VALUES (
                     {id_route},
                     '{step['step_sequence']}',
@@ -178,7 +179,8 @@ class DatabaseController:
                     {step['number_rotations_right_encoder']},
                     {step['left_pwm_intensity']},
                     {step['right_pwm_intensity']},
-                    {step['compass_module_degrees']}
+                    {step['compass_module_degrees']},
+                    '{step['step_type']}'
                 );
             """
             self.__cloud_database.execute_insert(query_insert)
@@ -295,9 +297,41 @@ class DatabaseController:
                 number_rotations_right_encoder,
                 left_pwm_intensity,
                 right_pwm_intensity,
-                compass_module_degrees
+                compass_module_degrees,
+                step_type
             FROM route_steps
-            WHERE id_route = {id_route};
+            WHERE id_route = {id_route}
+            ORDER BY id_route_step ASC;
         """
         df_route_steps = self.__cloud_database.execute_select(query_select)
         return df_route_steps
+
+    def verify_user_response(self, id_route_execution: int) -> str:
+        query_select = f"""
+            SELECT
+                message,
+                value
+            FROM notification
+            WHERE (
+                message = 'continue_route_stop_alarm'
+                AND moment >= TIMESTAMP '{get_str_datetime_agora()}'
+                AND id_route_execution = {id_route_execution}
+            )
+        """
+        df_user_response = self.__cloud_database.execute_select(query_select)
+
+        if df_user_response.empty:
+            return False
+
+        message_user_response = df_user_response.at[0, 'message']
+        value_user_response = df_user_response.at[0, 'value']
+
+        # Checks if the message is that one patrole was expecting
+        if message_user_response == 'continue_route_stop_alarm':
+            # If message value True, tells patrole to stop route execution
+            if value_user_response == "false":
+                return "Stop Route"
+            # If true, tells patrole to continue route execution
+            return "Continue Route"
+        # In case of receiving another message
+        return False

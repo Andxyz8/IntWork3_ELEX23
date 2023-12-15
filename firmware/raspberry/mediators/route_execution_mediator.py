@@ -94,6 +94,41 @@ class RouteExecutionMediator:
         )
         return id_camera_triggering
 
+    def __verify_user_response(self):
+        user_response = False
+        while not user_response:
+            user_response = self.__ctrl_database.verify_user_response(
+                self.__id_route_execution
+            )
+
+        return user_response
+
+    def __stop_motors(self):
+        # time_sleep(0.3)
+        success = self.__ctrl_esp_communication.stop_motor_executing()
+        # while not success:
+            # time_sleep(0.3)
+            # success = self.__ctrl_esp_communication.stop_motor_executing()
+
+    def __turn_on_buzzer(self):
+        success = self.__ctrl_esp_communication.turn_on_buzzer()
+        while not success:
+            success = self.__ctrl_esp_communication.turn_on_buzzer()
+            time_sleep(0.3)
+
+    def __turn_off_buzzer(self):
+        success = self.__ctrl_esp_communication.turn_off_buzzer()
+        while not success:
+            success = self.__ctrl_esp_communication.turn_off_buzzer()
+            time_sleep(0.3)
+
+    def __notify_aruco_marker_not_found(self, step_sequence: int):
+        self.__ctrl_database.insert_notification(
+            self.__id_route_execution,
+            "aruco_marker_not_found",
+            step_sequence
+        )
+
     def __update_moment_end_route_execution(self) -> None:
         self.__ctrl_database.update_route_execution_ending(
             unique_id = self.__id_route_execution
@@ -122,45 +157,45 @@ class RouteExecutionMediator:
             if (route_step['right_pwm_intensity'] > 0
                 and route_step['left_pwm_intensity'] > 0
             ):
-                time_sleep(0.5)
-                flag_success = self.__ctrl_esp_communication.move_forward()
-                while not flag_success:
-                    time_sleep(0.5)
-                    flag_success = self.__ctrl_esp_communication.move_forward()
+                print("MOVING FORWARD")
+                self.__ctrl_esp_communication.move_forward_executing()
+                print("ENDED MOVING FORWARD")
 
             if (route_step['right_pwm_intensity'] > 0
                 and route_step['left_pwm_intensity'] == 0
             ):
-                time_sleep(0.5)
-                flag_success = self.__ctrl_esp_communication.rotate_left()
-                while not flag_success:
-                    time_sleep(0.5)
-                    flag_success = self.__ctrl_esp_communication.rotate_left()
+                self.__ctrl_esp_communication.rotate_left_executing()
 
             if (route_step['right_pwm_intensity'] == 0
                 and route_step['left_pwm_intensity'] > 0
             ):
-                time_sleep(0.5)
-                flag_success = self.__ctrl_esp_communication.rotate_right()
-                while not flag_success:
-                    time_sleep(0.5)
-                    flag_success = self.__ctrl_esp_communication.rotate_right()
+                self.__ctrl_esp_communication.rotate_right_executing()
 
             print(f"MOVEU {route_step['step_sequence']}")
             # TODO: improve this condition, too dummy
-            if step_sequence % 8 == 0:
+                print("STOPPING MOTORS")
+                self.__stop_motors()
+                print("MOTORS STOPPED")
+
                 print(f"MOVEMENT FACE DETECTION {route_step['step_sequence']}")
                 result_detection = self.__movement_face_detection_routine()
+
                 if result_detection == "movement detected":
                     print(f"MOVEMENT DETECTED {route_step['step_sequence']}")
                     id_camera_triggering = self.__insert_route_execution_movement_detection(
                         route_step['step_sequence']
                     )
                     self.__notify_route_execution_movement_detection(id_camera_triggering)
-                    success = self.__ctrl_esp_communication.turn_on_buzzer()
-                    while not success:
-                        success = self.__ctrl_esp_communication.turn_on_buzzer()
-                        time_sleep(0.8)
+                    self.__turn_on_buzzer()
+
+                    user_response = self.__verify_user_response()
+                    if user_response == "Continue Route":
+                        pass
+                        self.__turn_off_buzzer()
+                    elif user_response == "Stop Route":
+                        self.__turn_off_buzzer()
+                        self.__end()
+                        return True
 
                 if result_detection ==  "face detected":
                     print(f"FACE DETECTED {route_step['step_sequence']}")
@@ -168,26 +203,36 @@ class RouteExecutionMediator:
                         route_step['step_sequence']
                     )
                     self.__notify_route_execution_face_detection(id_camera_triggering)
+                    self.__turn_on_buzzer()
 
-                    success = self.__ctrl_esp_communication.turn_on_buzzer()
-                    while not success:
-                        success = self.__ctrl_esp_communication.turn_on_buzzer()
-                        time_sleep(0.8)
-
-                    # TODO: implement the logic to understand user command to stop buzzer
+                    user_response = self.__verify_user_response()
+                    if user_response == "Continue Route":
+                        self.__turn_off_buzzer()
+                        pass
+                    elif user_response == "Stop Route":
+                        self.__turn_off_buzzer()
+                        self.__end()
+                        return True
 
             if (route_step['right_pwm_intensity'] == 0
                 and route_step['left_pwm_intensity'] == 0
             ):
+                print("MOTORS STARTED")
+                self.__stop_motors()
+                print("MOTORS STOPPED")
                 print(f"READING ARUCO {route_step['step_sequence']}")
                 id_aruco = self.__ctrl_camera.read_aruco_marker_routine(
                     self.__ctrl_esp_communication
                 )
-                # TODO: implement the logic to stop the robot if aruco marker not found
+                if id_aruco == -1:
+                    self.__notify_aruco_marker_not_found(step_sequence)
+                    self.__end()
+                    return True
                 self.__notify_route_execution_aruco_read(
                     id_aruco
                 )
                 # TODO: implement the logic to turn the robot to the correct direction
 
+        self.__stop_motors()
         self.__end()
         return True

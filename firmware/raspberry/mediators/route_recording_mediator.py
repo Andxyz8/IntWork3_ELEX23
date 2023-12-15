@@ -39,7 +39,8 @@ class RouteRecordingMediator:
                 'number_rotations_right_encoder': 3,
                 'left_pwm_intensity': pwm_intensity_left,
                 'right_pwm_intensity': pwm_intensity_right,
-                'compass_module_degrees': 0
+                'compass_module_degrees': 0,
+                'step_type': "Move Forward"
             }
         if step_type == 'RL':
             step = {
@@ -50,7 +51,8 @@ class RouteRecordingMediator:
                 'number_rotations_right_encoder': 2,
                 'left_pwm_intensity': 0,
                 'right_pwm_intensity': 48,
-                'compass_module_degrees': 0
+                'compass_module_degrees': 0,
+                'step_type': "Rotate Left"
             }
         if step_type == 'RR':
             step = {
@@ -61,7 +63,8 @@ class RouteRecordingMediator:
                 'number_rotations_right_encoder': 4,
                 'left_pwm_intensity': 48,
                 'right_pwm_intensity': 0,
-                'compass_module_degrees': 0
+                'compass_module_degrees': 0,
+                'step_type': "Rotate Right"
             }
         if step_type == 'RA':
             self.__number_arucos_readed += 1
@@ -73,7 +76,8 @@ class RouteRecordingMediator:
                 'number_rotations_right_encoder': 0,
                 'left_pwm_intensity': 0,
                 'right_pwm_intensity': 0,
-                'compass_module_degrees': 0
+                'compass_module_degrees': 0,
+                'step_type': "Aruco Read"
             }
 
         self.__route_steps.append(step)
@@ -137,23 +141,6 @@ class RouteRecordingMediator:
 
         self.__add_route_step('RA')
         return self.__current_aruco
-
-    def move_forward_fine(
-        self,
-        pwm_intensity_left: float,
-        pwm_intensity_right: float,
-        time_in_seconds: int
-    ) -> bool:
-        self.__add_route_step(
-            'FF',
-            pwm_intensity_left,
-            pwm_intensity_right
-        )
-        return self.__ctrl_esp.move_forward_fine(
-            pwm_intensity_left,
-            pwm_intensity_right,
-            time_in_seconds
-        )
 
     def __update_route_information(
         self,

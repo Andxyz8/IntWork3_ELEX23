@@ -54,7 +54,7 @@ class CameraHandler:
         time_sleep(0.8)
         success = ctrl_esp.rotate_camera_servo_left()
         while not success:
-            time_sleep(0.8)
+            time_sleep(1.6)
             success = ctrl_esp.rotate_camera_servo_left()
 
     def __left_servo(self, ctrl_esp: ESPCommunicationHandler):
@@ -74,7 +74,6 @@ class CameraHandler:
         imwrite(path_image_to_save, image_to_save)
 
     def __detect_movement(self, duration: int) -> bool:
-        time_sleep(1)
         cap = VideoCapture(0)
 
         fgbg = createBackgroundSubtractorMOG2(detectShadows = True)
@@ -84,7 +83,7 @@ class CameraHandler:
 
         movement_detected = False
 
-        while (this_moment() - start_time) < start_time + duration:
+        while this_moment() < start_time + duration:
             success_capturing, image_captured = cap.read()
 
             # Check if we get the frame
@@ -324,15 +323,30 @@ class CameraHandler:
         linear_dist: float,
         ctrl_esp: ESPCommunicationHandler
     ) -> bool:
-        # TODO: implement this function
+        while center_dist > 10 or center_dist < -10:
+            if center_dist > 10:
+                time_sleep(0.5)
+                flag_success = ctrl_esp.move_forward()
+                while not flag_success:
+                    time_sleep(0.5)
+                    flag_success = ctrl_esp.move_forward()
+                teste1, center_dist, linear_dist, teste2 = self.__detect_aruco_marker()
+                print(teste1, center_dist, linear_dist, teste2)
+            elif center_dist < -10:
+                time_sleep(0.5)
+                flag_success = ctrl_esp.move_forward()
+                while not flag_success:
+                    time_sleep(0.5)
+                    flag_success = ctrl_esp.move_forward()
+                teste1, center_dist, linear_dist, teste2 = self.__detect_aruco_marker()
+                print(teste1, center_dist, linear_dist, teste2)
         return True
 
     def movement_face_detection_routine(self, ctrl_esp: ESPCommunicationHandler) -> bool:
-
         print("MOVEMENT FACE DETECTION ROUTINE")
         # self.__center_servo(ctrl_esp)
 
-        self.__right_servo(ctrl_esp)
+        self.__left_servo(ctrl_esp)
 
         movement_detected = self.__detect_movement(5)
         print(f"RIGHT MOVEMENT DETECTION: {movement_detected}")
@@ -340,12 +354,12 @@ class CameraHandler:
             self.__center_servo(ctrl_esp)
             return "movement detected"
 
-        # face_detected = self.__detect_face()
-        # if face_detected:
-        #     self.__center_servo(ctrl_esp)
-        #     return "face detected"
+        face_detected = self.__detect_face()
+        if face_detected:
+            self.__center_servo(ctrl_esp)
+            return "face detected"
 
-        self.__left_servo(ctrl_esp)
+        self.__right_servo(ctrl_esp)
 
         movement_detected = self.__detect_movement(5)
         print(f"LEFT MOVEMENT DETECTION: {movement_detected}")
@@ -353,10 +367,10 @@ class CameraHandler:
             self.__center_servo(ctrl_esp)
             return "movement detected"
 
-        # face_detected = self.__detect_face()
-        # if face_detected:
-        #     self.__center_servo(ctrl_esp)
-        #     return "face detected"
+        face_detected = self.__detect_face()
+        if face_detected:
+            self.__center_servo(ctrl_esp)
+            return "face detected"
 
         self.__center_servo(ctrl_esp)
 
@@ -366,10 +380,10 @@ class CameraHandler:
             self.__center_servo(ctrl_esp)
             return "movement detected"
 
-        # face_detected = self.__detect_face()
-        # if face_detected:
-        #     self.__center_servo(ctrl_esp)
-        #     return "face detected"
+        face_detected = self.__detect_face()
+        if face_detected:
+            self.__center_servo(ctrl_esp)
+            return "face detected"
 
         return "nothing detected"
 
@@ -391,6 +405,7 @@ class CameraHandler:
 
         detected, center_dist, linear_dist, id_aruco = self.__detect_aruco_marker()
         print(f"READING ARUCO RIGHT: {detected}")
+        print(f"READING ARUCO LEFT CENTER DIST: {center_dist}")
         if detected:
             self.__reposition_aruco_reference(center_dist, linear_dist, ctrl_esp)
 

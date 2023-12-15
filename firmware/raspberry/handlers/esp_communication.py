@@ -1,5 +1,7 @@
 from struct import unpack, pack
+from time import sleep as time_sleep, time as this_moment
 from smbus2 import SMBus
+from Adafruit_PureIO.smbus import SMBus as ADA_SMBus
 from numpy import nan
 
 class ESPCommunicationHandler:
@@ -7,31 +9,42 @@ class ESPCommunicationHandler:
     def __init__(self) -> None:
         self.__i2c_slave_adress = 0x18
         self.__i2c_bus = SMBus(1)
+        self.i2c_bus = ADA_SMBus(1)
         self.__dict_commands: dict[str, str] = {
             'READ_COMPASS': 'crc', # not implemented
             'COMMUNICATION_TEST': 'mct', # implemented
-            'TURN_OFF_BUZZER': 'tib', # not implemented
-            'TURN_ON_BUZZER': 'tob', # not implemented
+            'TURN_OFF_BUZZER': 'ib', # not implemented
+            'TURN_ON_BUZZER': 'ob', # not implemented
             'READ_BUZZER': 'rbs', # not implemented
             'READ_RIGHT_ENCODER': 'rre', # not implemented
             'READ_LEFT_ENCODER': 'rle', # not implemented
-            'MOVE_FORWARD': 'cmf', # implemented on esp
-            'MOVE_FORWARD_FINE': 'cff',
-            'MOVE_BACKWARD': 'cmb', # implemented on esp
-            'ROTATE_LEFT': 'crl', # implemented on esp
-            'ROTATE_RIGHT': 'crr', # implemented on esp
-            'PLACE_CAMERA_SERVO_CENTER': 'csm', # implemented on esp
-            'TURN_CAMERA_SERVO_RIGHT': 'csf', # implemented on esp
-            'TURN_CAMERA_SERVO_LEFT': 'csz' # implemented on esp
+            'MOVE_FORWARD': 'mf', # implemented on esp
+            'MOVE_FORWARD_EXE': 'ef', # implemented on esp
+            'STOP_MOTOR_EXE': 'es', # implemented on esp
+            'MOVE_BACKWARD': 'mb', # implemented on esp
+            'ROTATE_LEFT': 'rl', # implemented on esp
+            'ROTATE_LEFT_EXE': 'el', # implemented on esp
+            'ROTATE_RIGHT': 'rr', # implemented on esp
+            'ROTATE_RIGHT_EXE': 'er', # implemented on esp
+            'PLACE_CAMERA_SERVO_CENTER': 'sm', # implemented on esp
+            'TURN_CAMERA_SERVO_RIGHT': 'sf', # implemented on esp
+            'TURN_CAMERA_SERVO_LEFT': 'sz' # implemented on esp
         }
+
+    def test_communication(self):
+        # print(f"DATA SENDING TO ESP32: {self.__dict_commands[data_to_send]}")
+        bytes_data = "andersonnogueirasilvaerickjosete".encode('utf-8')
+
+        self.i2c_bus.write_bytes(
+            self.__i2c_slave_adress,
+            bytearray(bytes_data)
+        )
 
     def __read_data_from_esp32(self, size_to_read: int) -> list[int]:
         # Read size_to_read bytes from i2c interface with esp32
-        data_received_esp = self.__i2c_bus.read_i2c_block_data(
+        data_received_esp = self.i2c_bus.read_bytes(
             self.__i2c_slave_adress,
-            0,
-            size_to_read,
-            False
+            size_to_read
         )
         # print(f"DATA RECEIVED FROM ESP32: {data_received_esp}")
 
@@ -46,6 +59,15 @@ class ESPCommunicationHandler:
             0,
             bytes_data,
             False
+        )
+
+    def __send_command_esp32(self, data_to_send: str):
+        # print(f"DATA SENDING TO ESP32: {self.__dict_commands[data_to_send]}")
+        bytes_data = self.__dict_commands[data_to_send].encode('utf-8')
+
+        self.i2c_bus.write_bytes(
+            self.__i2c_slave_adress,
+            bytearray(bytes_data)
         )
 
     def __send_float_to_esp32(self, float_to_send: float) -> None:
@@ -95,7 +117,7 @@ class ESPCommunicationHandler:
         return float_return
 
     def __test_i2c_communication_with_esp32(self) -> bool:
-        self.__send_command_to_esp32('COMMUNICATION_TEST')
+        self.__send_command_esp32('COMMUNICATION_TEST')
         esp_status = self.__read_str_from_data_from_esp32()
 
         print(f"ESP STATUS: {esp_status}")
@@ -105,7 +127,7 @@ class ESPCommunicationHandler:
         return False
 
     def __read_buzzer_status(self) -> int:
-        self.__send_command_to_esp32('READ_BUZZER')
+        self.__send_command_esp32('READ_BUZZER')
         data = self.__read_float_from_data_from_esp32()
         retry_number = 5
         retries = 0
@@ -113,7 +135,7 @@ class ESPCommunicationHandler:
             if retries == retry_number:
                 return 0.0
             print(f"COMPASS MODULE DATA CORRUPTED: {data}")
-            self.__send_command_to_esp32('READ_COMPASS')
+            self.__send_command_esp32('READ_COMPASS')
             data = self.__read_float_from_data_from_esp32()
 
             retries += 1
@@ -126,7 +148,7 @@ class ESPCommunicationHandler:
             return 0.0
 
     def __read_left_encoder_info(self) -> float:
-        self.__send_command_to_esp32('READ_LEFT_ENCODER')
+        self.__send_command_esp32('READ_LEFT_ENCODER')
         data = self.__read_float_from_data_from_esp32()
         retry_number = 5
         retries = 0
@@ -134,7 +156,7 @@ class ESPCommunicationHandler:
             if retries == retry_number:
                 return 0.0
             print(f"LEFT ENCODER DATA CORRUPTED: {data}")
-            self.__send_command_to_esp32('READ_LEFT_ENCODER')
+            self.__send_command_esp32('READ_LEFT_ENCODER')
             data = self.__read_float_from_data_from_esp32()
 
             retries += 1
@@ -147,7 +169,7 @@ class ESPCommunicationHandler:
             return 0.0
 
     def __read_right_encoder_info(self) -> float:
-        self.__send_command_to_esp32('READ_RIGHT_ENCODER')
+        self.__send_command_esp32('READ_RIGHT_ENCODER')
         data = self.__read_float_from_data_from_esp32()
         retry_number = 5
         retries = 0
@@ -155,7 +177,7 @@ class ESPCommunicationHandler:
             if retries == retry_number:
                 return 0.0
             print(f"RIGHT ENCODER DATA CORRUPTED: {data}")
-            self.__send_command_to_esp32('READ_RIGHT_ENCODER')
+            self.__send_command_esp32('READ_RIGHT_ENCODER')
             data = self.__read_float_from_data_from_esp32()
 
             retries += 1
@@ -168,7 +190,7 @@ class ESPCommunicationHandler:
             return 0.0
 
     def __read_compass_info(self) -> float:
-        self.__send_command_to_esp32('READ_COMPASS')
+        self.__send_command_esp32('READ_COMPASS')
         data = self.__read_float_from_data_from_esp32()
 
         retry_number = 5
@@ -177,7 +199,7 @@ class ESPCommunicationHandler:
             if retries == retry_number:
                 return 0.0
             print(f"COMPASS MODULE DATA CORRUPTED: {data}")
-            self.__send_command_to_esp32('READ_COMPASS')
+            self.__send_command_esp32('READ_COMPASS')
             data = self.__read_float_from_data_from_esp32()
 
             retries += 1
@@ -237,67 +259,117 @@ class ESPCommunicationHandler:
         }
 
     def move_forward(self):
-        self.__send_command_to_esp32('MOVE_FORWARD')
-        data = self.__read_str_from_data_from_esp32()
+        self.__send_command_esp32('MOVE_FORWARD')
 
-        # print(f"PWM MOTOR STATUS: {data}")
+        data = ''
+        time_start = this_moment()
+        print(f"PWM MOTOR FORWARD STATUS: {data} {time_start}")
+        while data not in ('MFOK', 'SEFO'):
+            # time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 1.5:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR FORWARD STATUS: {data} {this_time}")
+        return True
 
-        if 'OK' in data:
-            return True
-        return False
+    def move_forward_executing(self):
+        self.__send_command_esp32('MOVE_FORWARD_EXE')
+        data = ''
+        time_start = this_moment()
+        print(f"PWM MOTOR FORWARD STATUS: {data} {time_start}")
+        while data not in ('EFOK', 'SEFO'):
+            # time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 1:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR FORWARD STATUS: {data} {this_time}")
+        return True
 
-    def move_forward_fine(
-        self,
-        pwm_intensity_left: float,
-        pwm_intensity_right: float,
-        time_in_seconds: int
-    ) -> bool:
-        self.__send_command_to_esp32('MOVE_FORWARD_FINE')
+    def stop_motor_executing(self):
+        self.__send_command_esp32('STOP_MOTOR_EXE')
 
-        self.__send_float_to_esp32(pwm_intensity_left)
-        self.__send_float_to_esp32(pwm_intensity_right)
-        self.__send_float_to_esp32(time_in_seconds)
+        data = ''
+        time_start = this_moment()
+        print(f"PWM MOTOR STOP STATUS: {data} {time_start}")
+        while 'ESOK' not in data:
+            # time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 0.5:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR STOP STATUS: {data} {this_time}")
 
-        data = self.__read_str_from_data_from_esp32()
-
-        print(f"PWM MOTOR STATUS: {data}")
-
-        if 'OK' in data:
-            return True
-        return False
+        return True
 
     def move_backward(self) -> bool:
-        self.__send_command_to_esp32('MOVE_BACKWARD')
+        self.__send_command_esp32('MOVE_BACKWARD')
         data = self.__read_str_from_data_from_esp32()
 
         print(f"PWM MOTOR STATUS: {data}")
 
-        if 'OK' in data:
+        if 'MBOK' in data:
             return True
         return False
 
     def rotate_left(self) -> bool:
-        self.__send_command_to_esp32('ROTATE_LEFT')
-        data = self.__read_str_from_data_from_esp32()
+        self.__send_command_esp32('ROTATE_LEFT')
 
-        print(f"PWM MOTOR STATUS: {data}")
+        data = ''
+        time_start = this_moment()
+        print(f"PWM MOTOR LEFT STATUS: {data} {time_start}")
+        while 'RLOK' not in data:
+            # time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 2.9:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR LEFT STATUS: {data} {this_time}")
+        return True
 
-        if 'OK' in data:
-            return True
-        return False
+    def rotate_left_executing(self) -> bool:
+        self.__send_command_esp32('ROTATE_LEFT_EXE')
+        data = ''
+
+        time_start = this_moment()
+        print(f"PWM MOTOR LEFT STATUS: {data} {time_start}")
+        while 'ELOK' not in data:
+            # time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 0.95:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR LEFT STATUS: {data} {this_time}")
+        return True
 
     def rotate_right(self) -> bool:
-        self.__send_command_to_esp32('ROTATE_RIGHT')
+        self.__send_command_esp32('ROTATE_RIGHT')
         data = self.__read_str_from_data_from_esp32()
 
-        print(f"PWM MOTOR STATUS: {data}")
+        data = ''
 
-        if 'OK' in data:
-            return True
-        return False
+        time_start = this_moment()
+        print(f"PWM MOTOR RIGHT STATUS: {data} {time_start}")
+        while 'RROK' not in data:
+            time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 2.9:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR RIGHT STATUS: {data} {this_time}")
+        return True
+
+    def rotate_right_executing(self) -> bool:
+        self.__send_command_esp32('ROTATE_RIGHT_EXE')
+        data = ''
+
+        time_start = this_moment()
+        print(f"PWM MOTOR STATUS: {data} {time_start}")
+        while 'EROK' not in data:
+            time_sleep(1)
+            this_time = this_moment()
+            if this_time >= time_start + 0.95:
+                data = self.__read_str_from_data_from_esp32()
+                print(f"PWM MOTOR RIGHT STATUS: {data} {this_time}")
+        return True
 
     def center_camera_servo(self) -> bool:
-        self.__send_command_to_esp32('PLACE_CAMERA_SERVO_CENTER')
+        self.__send_command_esp32('PLACE_CAMERA_SERVO_CENTER')
         data = self.__read_str_from_data_from_esp32()
 
         print(f"COMANDO: {self.__dict_commands['PLACE_CAMERA_SERVO_CENTER']}")
@@ -308,17 +380,17 @@ class ESPCommunicationHandler:
         return False
 
     def rotate_camera_servo_right(self) -> bool:
-        self.__send_command_to_esp32('TURN_CAMERA_SERVO_RIGHT')
+        self.__send_command_esp32('TURN_CAMERA_SERVO_RIGHT')
         data = self.__read_str_from_data_from_esp32()
         print(f"COMANDO: {self.__dict_commands['TURN_CAMERA_SERVO_RIGHT']}")
-        print(f"SERVO STATUS LEFT: {data}")
+        print(f"SERVO STATUS RIGHT: {data}")
 
         if 'SFOK' in data:
             return True
         return False
 
     def rotate_camera_servo_left(self) -> bool:
-        self.__send_command_to_esp32('TURN_CAMERA_SERVO_LEFT')
+        self.__send_command_esp32('TURN_CAMERA_SERVO_LEFT')
         print(f"COMANDO: {self.__dict_commands['TURN_CAMERA_SERVO_LEFT']}")
         data = self.__read_str_from_data_from_esp32()
 
@@ -329,7 +401,7 @@ class ESPCommunicationHandler:
         return False
 
     def turn_off_buzzer(self) -> bool:
-        self.__send_command_to_esp32('TURN_OFF_BUZZER')
+        self.__send_command_esp32('TURN_OFF_BUZZER')
         data = self.__read_str_from_data_from_esp32()
 
         print(f"BUZZER STATUS: {data}")
@@ -339,7 +411,7 @@ class ESPCommunicationHandler:
         return False
 
     def turn_on_buzzer(self) -> bool:
-        self.__send_command_to_esp32('TURN_ON_BUZZER')
+        self.__send_command_esp32('TURN_ON_BUZZER')
         data = self.__read_str_from_data_from_esp32()
 
         print(f"BUZZER STATUS: {data}")
